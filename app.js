@@ -11,8 +11,12 @@ async function startApp() {
   if (isAppStarted) return;
   isAppStarted = true;
 
+  // 0. ボタンイベントを最優先で割り当て・有効化
   const btn = document.getElementById('next-btn');
-  if (btn) btn.onclick = showNextScene;
+  if (btn) {
+    btn.disabled = false;
+    btn.onclick = showNextScene;
+  }
 
   // 1. words.json 読み込み
   try {
@@ -21,8 +25,8 @@ async function startApp() {
     scenesData = await res.json();
   } catch (err) {
     console.error("Failed to load words.json:", err);
-    renderError("words.json の読み込みに失敗しました。");
-    return;
+    renderError("words.json の読み込みに失敗しました。ファイルパスまたはWebサーバー経由（ローカルサーバー）で開いているか確認してください。");
+    return; // JSON読み込み失敗時はここで処理を中断（WASM処理へ進ませない）
   }
 
   // 2. WASM関数バインド
@@ -31,7 +35,7 @@ async function startApp() {
       initSeed = Module.cwrap('init_seed', null, []);
       selectNextScene = Module.cwrap('select_next_scene', 'number', ['number', 'number', 'number']);
       allocateMatrix = Module.cwrap('allocate_matrix', 'number', ['number']);
-      
+
       if (initSeed) initSeed();
       if (scenesData.length > 0 && allocateMatrix) {
         buildAndUploadMatrix();
@@ -47,6 +51,8 @@ async function startApp() {
 
 function buildAndUploadMatrix() {
   const n = scenesData.length;
+  if (n === 0) return;
+
   const matrix = new Int32Array(n * n);
 
   for (let i = 0; i < n; i++) {
@@ -66,11 +72,15 @@ function buildAndUploadMatrix() {
     }
   }
 
+  // _malloc が安全に存在するか確認してから実行
   if (typeof allocateMatrix === 'function') {
-    matrixPtr = allocateMatrix(matrix.length);
-    if (matrixPtr && Module.HEAP32) {
-      // 4バイト（Int32Array）境界に合わせて配置
-      Module.HEAP32.set(matrix, matrixPtr >> 2);
+    try {
+      matrixPtr = allocateMatrix(matrix.length);
+      if (matrixPtr && Module.HEAP32) {
+        Module.HEAP32.set(matrix, matrixPtr >> 2);
+      }
+    } catch (e) {
+      console.warn("allocateMatrix execution failed:", e);
     }
   }
 }
@@ -81,28 +91,21 @@ function showNextScene() {
   if (selectNextScene && matrixPtr) {
     currentIndex = selectNextScene(currentIndex, matrixPtr, scenesData.length);
   } else {
+    // WASMが使えない場合のフォールバック（順繰り表示）
     currentIndex = (currentIndex + 1) % scenesData.length;
   }
 
   const scene = scenesData[currentIndex];
-  
-  // シーンID表示
+
   const sceneEl = document.getElementById('scene-id');
   if (sceneEl) sceneEl.textContent = scene.sceneId || `SCENE ${currentIndex + 1}`;
 
   const container = document.getElementById('content-container');
-  
   if (container) {
-    // 新UI構造（動的要素生成）
     container.innerHTML = '';
     renderSection(container, 'Chunk', scene.chunks, 'chunk');
     renderSection(container, 'Idiom', scene.idioms, 'idiom');
     renderSection(container, 'Word', scene.words, 'word');
-  } else {
-    // 旧UI構造へのフォールバック
-    updateOldUiField('chunk-en', 'chunk-ja', scene.chunks);
-    updateOldUiField('idiom-en', 'idiom-ja', scene.idioms);
-    updateOldUiField('word-en', 'word-ja', scene.words);
   }
 }
 
@@ -133,18 +136,6 @@ function renderSection(container, typeLabel, items, cssClass) {
   });
 }
 
-function updateOldUiField(enId, jaId, items) {
-  const enEl = document.getElementById(enId);
-  const jaEl = document.getElementById(jaId);
-  if (items && items.length > 0) {
-    if (enEl) enEl.textContent = items[0].en || '-';
-    if (jaEl) jaEl.textContent = items[0].ja || '-';
-  } else {
-    if (enEl) enEl.textContent = '-';
-    if (jaEl) jaEl.textContent = '-';
-  }
-}
-
 function renderError(msg) {
   const container = document.getElementById('content-container');
   if (container) {
@@ -153,12 +144,6 @@ function renderError(msg) {
     alert(msg);
   }
 }
-
-// Module のグローバル宣言と初期化コールバックの確実なバインド
-var Module = Module || {};
-Module.onRuntimeInitialized = function() {
-  startApp();
-};
 
 // DOM読み込み完了時のフォールバック発火
 window.addEventListener('DOMContentLoaded', () => {
