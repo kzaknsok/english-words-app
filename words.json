@@ -1,0 +1,1153 @@
+[
+  {
+    "sceneId": "scene_01",
+    "chunks": [
+      { "id": "chunk_01a", "en": "give me a sec", "ja": "ちょっと時間をくれる" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_01a", "en": "give", "ja": "与える" }
+    ]
+  },
+  {
+    "sceneId": "scene_02",
+    "chunks": [
+      { "id": "chunk_02a", "en": "totally down", "ja": "全然OK・乗り気" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_02a", "en": "totally", "ja": "完全に・めっちゃ" }
+    ]
+  },
+  {
+    "sceneId": "scene_03",
+    "chunks": [
+      { "id": "chunk_03a", "en": "start cleaning my room", "ja": "部屋の掃除を始める" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_03a", "en": "start", "ja": "始める" }
+    ]
+  },
+  {
+    "sceneId": "scene_04",
+    "chunks": [
+      { "id": "chunk_04a", "en": "put things off", "ja": "物事を後回しにする" }
+    ],
+    "idioms": [
+      { "id": "idiom_04a", "en": "put off", "ja": "後回しにする" }
+    ],
+    "words": [
+      { "id": "word_04a", "en": "put", "ja": "置く・後回しにする" }
+    ]
+  },
+  {
+    "sceneId": "scene_05",
+    "chunks": [
+      { "id": "chunk_05a", "en": "get a caramel latte", "ja": "キャラメルラテをもらう" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_05a", "en": "get", "ja": "もらう" }
+    ]
+  },
+  {
+    "sceneId": "scene_06",
+    "chunks": [
+      { "id": "chunk_06a", "en": "make it iced", "ja": "アイスにする" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_06a", "en": "make", "ja": "〜にする" }
+    ]
+  },
+  {
+    "sceneId": "scene_07",
+    "chunks": [
+      { "id": "chunk_07a", "en": "around the corner", "ja": "角を曲がったすぐ" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_07a", "en": "around", "ja": "周辺・すぐ" }
+    ]
+  },
+  {
+    "sceneId": "scene_08",
+    "chunks": [
+      { "id": "chunk_08a", "en": "take a left", "ja": "左に曲がる" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_08a", "en": "take", "ja": "〜する・曲がる" }
+    ]
+  },
+  {
+    "sceneId": "scene_09",
+    "chunks": [
+      { "id": "chunk_09a", "en": "have a smaller size", "ja": "小さいサイズがある" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_09a", "en": "have", "ja": "持つ・ある" }
+    ]
+  },
+  {
+    "sceneId": "scene_10",
+    "chunks": [
+      { "id": "chunk_10a", "en": "try this on", "ja": "試着する" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_10a", "en": "try", "ja": "試す" }
+    ]
+  },
+  {
+    "sceneId": "scene_11",
+    "chunks": [
+      { "id": "chunk_11a", "en": "so tired", "ja": "とても疲れている" }
+    ],
+    "idioms": [],
+       "words": [
+      { "id": "word_11a", "en": "tired", "ja": "疲れた" }
+    ]
+  },
+  {
+    "sceneId": "scene_12",
+    "chunks": [
+      { "id": "chunk_12a", "en": "cheered me up", "ja": "元気づけた" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_12a", "en": "cheered", "ja": "元気づけた" }
+    ]
+  },
+  {
+    "sceneId": "scene_13",
+    "chunks": [
+      { "id": "chunk_13a", "en": "hang out", "ja": "遊ぶ・時間を過ごす" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_13a", "en": "hang", "ja": "ぶら下がる・遊ぶ（口語）" }
+    ]
+  },
+  {
+    "sceneId": "scene_14",
+    "chunks": [
+      { "id": "chunk_14a", "en": "let you know", "ja": "知らせる" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_14a", "en": "let", "ja": "〜させる" }
+    ]
+  },
+  {
+    "sceneId": "scene_15",
+    "chunks": [
+      { "id": "chunk_15a", "en": "take a break", "ja": "休憩する" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_15a", "en": "take", "ja": "取る・行う" }
+    ]
+  },
+  {
+    "sceneId": "scene_16",
+    "chunks": [
+      { "id": "chunk_16a", "en": "remember what I was doing", "ja": "何をしていたか思い出す" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_16a", "en": "remember", "ja": "思い出す" }
+    ]
+  },
+  {
+    "sceneId": "scene_17",
+    "chunks": [
+      { "id": "chunk_17a", "en": "get the same thing", "ja": "同じものをもらう" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_17a", "en": "get", "ja": "もらう" }
+    ]
+  },
+  {
+    "sceneId": "scene_18",
+    "chunks": [
+      { "id": "chunk_18a", "en": "make it to go", "ja": "テイクアウトにする" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_18a", "en": "make", "ja": "〜にする" }
+    ]
+  },
+  {
+    "sceneId": "scene_19",
+    "chunks": [
+      { "id": "chunk_19a", "en": "five minutes from here", "ja": "ここから5分" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_19a", "en": "five", "ja": "5" }
+    ]
+  },
+  {
+    "sceneId": "scene_20",
+    "chunks": [
+      { "id": "chunk_20a", "en": "keep walking straight", "ja": "まっすぐ進み続ける" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_20a", "en": "keep", "ja": "続ける" }
+    ]
+  },
+  {
+    "sceneId": "scene_21",
+    "chunks": [
+      { "id": "chunk_21a", "en": "have any discounts", "ja": "割引がある" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_21a", "en": "have", "ja": "持つ・ある" }
+    ]
+  },
+  {
+    "sceneId": "scene_22",
+    "chunks": [
+      { "id": "chunk_22a", "en": "pay with card", "ja": "カードで支払う" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_22a", "en": "pay", "ja": "支払う" }
+    ]
+  },
+  {
+    "sceneId": "scene_23",
+    "chunks": [
+      { "id": "chunk_23a", "en": "kinda nervous", "ja": "ちょっと緊張している" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_23a", "en": "nervous", "ja": "緊張した" }
+    ]
+  },
+  {
+    "sceneId": "scene_24",
+    "chunks": [
+      { "id": "chunk_24a", "en": "made my day", "ja": "嬉しくなった・最高だった" }
+    ],
+    "idioms": [
+      { "id": "idiom_24a", "en": "make someone's day", "ja": "誰かを喜ばせる" }
+    ],
+    "words": [
+      { "id": "word_24a", "en": "made", "ja": "〜した" }
+    ]
+  },
+  {
+    "sceneId": "scene_25",
+    "chunks": [
+      { "id": "chunk_25a", "en": "hit me up", "ja": "連絡する（口語）" }
+    ],
+    "idioms": [
+      { "id": "idiom_25a", "en": "hit up", "ja": "連絡する（スラング）" }
+    ],
+    "words": [
+      { "id": "word_25a", "en": "hit", "ja": "打つ・連絡する（口語）" }
+    ]
+  },
+  {
+    "sceneId": "scene_26",
+    "chunks": [
+      { "id": "chunk_26a", "en": "actually heading out", "ja": "実は出るところ" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_26a", "en": "actually", "ja": "実は" }
+    ]
+  },
+  {
+    "sceneId": "scene_27",
+    "chunks": [
+      { "id": "chunk_27a", "en": "cook something", "ja": "何か作る" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_27a", "en": "cook", "ja": "料理する" }
+    ]
+  },
+  {
+    "sceneId": "scene_28",
+    "chunks": [
+      { "id": "chunk_28a", "en": "find where I put my keys", "ja": "鍵をどこに置いたか見つける" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_28a", "en": "find", "ja": "見つける" }
+    ]
+  },
+  {
+    "sceneId": "scene_29",
+    "chunks": [
+      { "id": "chunk_29a", "en": "get me some water", "ja": "水をもらう" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_29a", "en": "get", "ja": "もらう" }
+    ]
+  },
+  {
+    "sceneId": "scene_30",
+    "chunks": [
+      { "id": "chunk_30a", "en": "so frustrated", "ja": "とてもイライラしている" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_30a", "en": "frustrated", "ja": "イライラした" }
+    ]
+  },
+  {
+    "sceneId": "scene_31",
+    "chunks": [
+      { "id": "chunk_31a", "en": "hear what happened", "ja": "何が起きたか聞く" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_31a", "en": "hear", "ja": "聞く" }
+    ]
+  },
+  {
+    "sceneId": "scene_32",
+    "chunks": [
+      { "id": "chunk_32a", "en": "stop by your place", "ja": "家に寄る" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_32a", "en": "stop", "ja": "立ち寄る" }
+    ]
+  },
+  {
+    "sceneId": "scene_33",
+    "chunks": [
+      { "id": "chunk_33a", "en": "do my laundry", "ja": "洗濯する" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_33a", "en": "do", "ja": "する" }
+    ]
+  },
+  {
+    "sceneId": "scene_34",
+    "chunks": [
+      { "id": "chunk_34a", "en": "stay up late", "ja": "夜更かしする" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_34a", "en": "stay up", "ja": "起きている" }
+    ]
+  },
+  {
+    "sceneId": "scene_35",
+    "chunks": [
+      { "id": "chunk_35a", "en": "get large fries", "ja": "ポテトLをもらう" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_35a", "en": "get", "ja": "もらう" }
+    ]
+  },
+  {
+    "sceneId": "scene_36",
+    "chunks": [
+      { "id": "chunk_36a", "en": "put the sauce on the side", "ja": "ソースを別にする" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_36a", "en": "put", "ja": "置く・入れる" }
+    ]
+  },
+  {
+    "sceneId": "scene_37",
+    "chunks": [
+      { "id": "chunk_37a", "en": "see it on your right", "ja": "右側に見える" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_37a", "en": "see", "ja": "見る" }
+    ]
+  },
+  {
+    "sceneId": "scene_38",
+    "chunks": [
+      { "id": "chunk_38a", "en": "follow the signs", "ja": "看板に従う" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_38a", "en": "follow", "ja": "従う" }
+    ]
+  },
+  {
+    "sceneId": "scene_39",
+    "chunks": [
+      { "id": "chunk_39a", "en": "have other colors", "ja": "他の色がある" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_39a", "en": "have", "ja": "持つ・ある" }
+    ]
+  },
+  {
+    "sceneId": "scene_40",
+    "chunks": [
+      { "id": "chunk_40a", "en": "get a refund", "ja": "返金を受ける" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_40a", "en": "get", "ja": "受ける" }
+    ]
+  },
+  {
+    "sceneId": "scene_41",
+    "chunks": [
+      { "id": "chunk_41a", "en": "super excited", "ja": "めっちゃ楽しみ" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_41a", "en": "super", "ja": "超" }
+    ]
+  },
+  {
+    "sceneId": "scene_42",
+    "chunks": [
+      { "id": "chunk_42a", "en": "ruined my mood", "ja": "気分を台無しにした" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_42a", "en": "ruined", "ja": "台無しにした" }
+    ]
+  },
+  {
+    "sceneId": "scene_43",
+    "chunks": [
+      { "id": "chunk_43a", "en": "send me that playlist", "ja": "プレイリストを送る" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_43a", "en": "send", "ja": "送る" }
+    ]
+  },
+  {
+    "sceneId": "scene_44",
+    "chunks": [
+      { "id": "chunk_44a", "en": "meet up later", "ja": "後で会う" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_44a", "en": "meet", "ja": "会う" }
+    ]
+  },
+  {
+    "sceneId": "scene_45",
+    "chunks": [
+      { "id": "chunk_45a", "en": "start drinking less coffee", "ja": "コーヒーを減らし始める" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_45a", "en": "start", "ja": "始める" }
+    ]
+  },
+  {
+    "sceneId": "scene_46",
+    "chunks": [
+      { "id": "chunk_46a", "en": "clean my desk", "ja": "机を片付ける" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_46a", "en": "clean", "ja": "掃除する" }
+    ]
+  },
+  {
+    "sceneId": "scene_47",
+    "chunks": [
+      { "id": "chunk_47a", "en": "make it extra spicy", "ja": "辛めにする" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_47a", "en": "make", "ja": "作る・〜にする" }
+    ]
+  },
+  {
+    "sceneId": "scene_48",
+    "chunks": [
+      { "id": "chunk_48a", "en": "order an iced tea", "ja": "アイスティーを注文する" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_48a", "en": "order", "ja": "注文する" }
+    ]
+  },
+  {
+    "sceneId": "scene_49",
+    "chunks": [
+      { "id": "chunk_49a", "en": "right across the street", "ja": "通りのすぐ向こう" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_49a", "en": "right", "ja": "すぐ" }
+    ]
+  },
+  {
+    "sceneId": "scene_50",
+    "chunks": [
+      { "id": "chunk_50a", "en": "take the elevator", "ja": "エレベーターに乗る" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_50a", "en": "take", "ja": "使う・乗る" }
+    ]
+  },
+  {
+    "sceneId": "scene_51",
+    "chunks": [
+      { "id": "chunk_51a", "en": "get this delivered", "ja": "配送してもらう" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_51a", "en": "get", "ja": "してもらう" }
+    ]
+  },
+  {
+    "sceneId": "scene_52",
+    "chunks": [
+      { "id": "chunk_52a", "en": "offer gift wrapping", "ja": "ギフト包装を提供する" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_52a", "en": "offer", "ja": "提供する" }
+    ]
+  },
+  {
+    "sceneId": "scene_53",
+    "chunks": [
+      { "id": "chunk_53a", "en": "kinda overwhelmed", "ja": "ちょっといっぱいいっぱい" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_53a", "en": "kinda", "ja": "ちょっと" }
+    ]
+  },
+  {
+    "sceneId": "scene_54",
+    "chunks": [
+      { "id": "chunk_54a", "en": "made me smile", "ja": "笑顔にさせた" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_54a", "en": "made", "ja": "〜させた" }
+    ]
+  },
+  {
+    "sceneId": "scene_55",
+    "chunks": [
+      { "id": "chunk_55a", "en": "send me the link", "ja": "リンクを送る" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_55a", "en": "send", "ja": "送る" }
+    ]
+  },
+  {
+    "sceneId": "scene_56",
+    "chunks": [
+      { "id": "chunk_56a", "en": "just heading", "ja": "ちょうど向かっている" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_56a", "en": "just", "ja": "ちょうど" }
+    ]
+  },
+  {
+    "sceneId": "scene_57",
+    "chunks": [
+      { "id": "chunk_57a", "en": "eat something healthy", "ja": "健康的なものを食べる" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_57a", "en": "eat", "ja": "食べる" }
+    ]
+  },
+  {
+    "sceneId": "scene_58",
+    "chunks": [
+      { "id": "chunk_58a", "en": "put my phone", "ja": "スマホを置く" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_58a", "en": "put", "ja": "置く" }
+    ]
+  },
+  {
+    "sceneId": "scene_59",
+    "chunks": [
+      { "id": "chunk_59a", "en": "get a glass of water", "ja": "水をもらう" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_59a", "en": "get", "ja": "もらう" }
+    ]
+  },
+  {
+    "sceneId": "scene_60",
+    "chunks": [
+      { "id": "chunk_60a", "en": "so pumped", "ja": "テンション上がってる" }
+    ],
+    "idioms": [],
+    "words": [
+      { "id": "word_60a", "en": "pumped", "ja": "興奮した" }
+    ]
+  },
+  {
+    "sceneId": "scene_61",
+    "chunks": [
+      {
+        "id": "chunk_61a",
+        "en": "text me later",
+        "ja": "後でメッセージして"
+      },
+      {
+        "id": "chunk_61b",
+        "en": "about the plan",
+        "ja": "予定について"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_61a",
+        "en": "text",
+        "ja": "メッセージする"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_62",
+    "chunks": [
+      {
+        "id": "chunk_62a",
+        "en": "I'm about heading out",
+        "ja": "そろそろ出るところ"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_62a",
+        "en": "about",
+        "ja": "だいたい、そろそろ"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_63",
+    "chunks": [
+      {
+        "id": "chunk_63a",
+        "en": "fix my schedule",
+        "ja": "スケジュールを直す"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_63a",
+        "en": "fix",
+        "ja": "直す"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_64",
+    "chunks": [
+      {
+        "id": "chunk_64a",
+        "en": "drink some water",
+        "ja": "水を飲む"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_64a",
+        "en": "drink",
+        "ja": "飲む"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_65",
+    "chunks": [
+      {
+        "id": "chunk_65a",
+        "en": "get a hot chocolate",
+        "ja": "ホットチョコレートをもらう"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_65a",
+        "en": "get",
+        "ja": "もらう・注文する"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_66",
+    "chunks": [
+      {
+        "id": "chunk_66a",
+        "en": "reduce the sugar",
+        "ja": "砂糖を減らす"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_66a",
+        "en": "reduce",
+        "ja": "減らす"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_67",
+    "chunks": [
+      {
+        "id": "chunk_67a",
+        "en": "turn right",
+        "ja": "右に曲がる"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_67a",
+        "en": "turn",
+        "ja": "曲がる"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_68",
+    "chunks": [
+      {
+        "id": "chunk_68a",
+        "en": "right behind",
+        "ja": "すぐ後ろ"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_68a",
+        "en": "right",
+        "ja": "すぐ"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_69",
+    "chunks": [
+      {
+        "id": "chunk_69a",
+        "en": "have any deals",
+        "ja": "セールがある"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_69a",
+        "en": "have",
+        "ja": "持つ・ある"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_70",
+    "chunks": [
+      {
+        "id": "chunk_70a",
+        "en": "choose in-store pickup",
+        "ja": "店頭受け取りを選ぶ"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_70a",
+        "en": "choose",
+        "ja": "選ぶ"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_71",
+    "chunks": [
+      {
+        "id": "chunk_71a",
+        "en": "kinda stressed out",
+        "ja": "ちょっとストレスがある"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_71a",
+        "en": "kinda",
+        "ja": "ちょっと"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_72",
+    "chunks": [
+      {
+        "id": "chunk_72a",
+        "en": "boosted my confidence",
+        "ja": "自信をつけた"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_72a",
+        "en": "boosted",
+        "ja": "高めた"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_73",
+    "chunks": [
+      {
+        "id": "chunk_73a",
+        "en": "meet up",
+        "ja": "会う"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_73a",
+        "en": "meet",
+        "ja": "会う"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_74",
+    "chunks": [
+      {
+        "id": "chunk_74a",
+        "en": "give me a ride",
+        "ja": "車で送る"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_74a",
+        "en": "give",
+        "ja": "与える"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_75",
+    "chunks": [
+      {
+        "id": "chunk_75a",
+        "en": "clean my room",
+        "ja": "部屋を片付ける"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_75a",
+        "en": "clean",
+        "ja": "掃除する"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_76",
+    "chunks": [
+      {
+        "id": "chunk_76a",
+        "en": "check my emails",
+        "ja": "メールを確認する"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_76a",
+        "en": "check",
+        "ja": "確認する"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_77",
+    "chunks": [
+      {
+        "id": "chunk_77a",
+        "en": "get a refill",
+        "ja": "おかわりをもらう"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_77a",
+        "en": "get",
+        "ja": "もらう"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_78",
+    "chunks": [
+      {
+        "id": "chunk_78a",
+        "en": "leave the ice out",
+        "ja": "氷を入れない"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_78a",
+        "en": "leave",
+        "ja": "残す・入れない"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_79",
+    "chunks": [
+      {
+        "id": "chunk_79a",
+        "en": "right next to",
+        "ja": "すぐ隣"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_79a",
+        "en": "right",
+        "ja": "すぐ"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_80",
+    "chunks": [
+      {
+        "id": "chunk_80a",
+        "en": "take the stairs",
+        "ja": "階段を使う"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_80a",
+        "en": "take",
+        "ja": "使う・行く"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_81",
+    "chunks": [
+      {
+        "id": "chunk_81a",
+        "en": "get this shipped overseas",
+        "ja": "海外発送してもらう"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_81a",
+        "en": "get",
+        "ja": "してもらう"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_82",
+    "chunks": [
+      {
+        "id": "chunk_82a",
+        "en": "offer a membership discount",
+        "ja": "会員割引を提供する"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_82a",
+        "en": "offer",
+        "ja": "提供する"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_83",
+    "chunks": [
+      {
+        "id": "chunk_83a",
+        "en": "totally exhausted",
+        "ja": "完全に疲れ切っている"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_83a",
+        "en": "totally",
+        "ja": "完全に"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_84",
+    "chunks": [
+      {
+        "id": "chunk_84a",
+        "en": "broke my heart",
+        "ja": "心が折れた"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_84a",
+        "en": "broke",
+        "ja": "壊した"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_85",
+    "chunks": [
+      {
+        "id": "chunk_85a",
+        "en": "wake me up",
+        "ja": "起こす"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_85a",
+        "en": "wake",
+        "ja": "起こす"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_86",
+    "chunks": [
+      {
+        "id": "chunk_86a",
+        "en": "actually heading",
+        "ja": "実は向かっている"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_86a",
+        "en": "actually",
+        "ja": "実は"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_87",
+    "chunks": [
+      {
+        "id": "chunk_87a",
+        "en": "grab something quick",
+        "ja": "何かサッと食べる"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_87a",
+        "en": "grab",
+        "ja": "サッと取る・食べる"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_88",
+    "chunks": [
+      {
+        "id": "chunk_88a",
+        "en": "leave my charger",
+        "ja": "充電器を置いてきた"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_88a",
+        "en": "leave",
+        "ja": "置く・忘れる"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_89",
+    "chunks": [
+      {
+        "id": "chunk_89a",
+        "en": "get a small salad",
+        "ja": "小さいサラダをもらう"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_89a",
+        "en": "get",
+        "ja": "もらう"
+      }
+    ]
+  },
+  {
+    "sceneId": "scene_90",
+    "chunks": [
+      {
+        "id": "chunk_90a",
+        "en": "I'm so bored",
+        "ja": "めっちゃ退屈してる"
+      }
+    ],
+    "idioms": [],
+    "words": [
+      {
+        "id": "word_90a",
+        "en": "bored",
+        "ja": "退屈した"
+      }
+    ]
+  }
+]

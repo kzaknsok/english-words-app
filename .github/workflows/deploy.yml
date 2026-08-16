@@ -1,0 +1,35 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ] # masterブランチの場合は master に変更してください
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1. GitHubのサーバー上にEmscripten(emcc)をセットアップ
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v12
+        with:
+          version: 3.1.50
+
+      # 2. C言語をWASMへコンパイル & 配信用のdistフォルダ作成
+      - name: Compile C to WASM and Build
+        run: |
+          mkdir -p dist
+          emcc engine.c -O3 -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["cwrap","HEAP32"]' -o dist/engine.js
+          cp index.html app.js words.json dist/
+
+      # 3. distフォルダの内容を gh-pages ブランチへ自動デプロイ
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
