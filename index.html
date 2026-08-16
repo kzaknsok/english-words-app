@@ -51,7 +51,6 @@
       letter-spacing: 0.05em;
     }
 
-    /* 追加入力用コンテナ */
     #content-container {
       display: flex;
       flex-direction: column;
@@ -68,7 +67,6 @@
       gap: 4px;
     }
 
-    /* タグの色分け */
     .tag {
       font-size: 0.75rem;
       font-weight: 700;
@@ -132,7 +130,6 @@
       <span class="scene-title" id="scene-id">SCENE --</span>
     </div>
 
-    <!-- JS側でデータが存在するものだけ動的に挿入するエリア -->
     <div id="content-container">
       <div class="section chunk">
         <span class="tag">System</span>
@@ -141,10 +138,19 @@
       </div>
     </div>
 
-    <!-- 最初から押せる状態にしておく -->
     <button id="next-btn" class="btn-action">次へ表示</button>
   </main>
 
+  <!-- Moduleオブジェクトを先に定義してから engine.js を読み込む -->
+  <script>
+    var Module = {
+      onRuntimeInitialized: function() {
+        if (typeof startApp === 'function') {
+          startApp();
+        }
+      }
+    };
+  </script>
   <script src="engine.js"></script>
   <script src="app.js"></script>
 </body>
