@@ -5,7 +5,6 @@ let currentIndex = 0;
 let initSeed = null;
 let selectNextScene = null;
 
-// アプリ起動メイン関数
 async function startApp() {
   console.log("App starting...");
 
@@ -17,11 +16,11 @@ async function startApp() {
     console.log("words.json loaded successfully:", scenesData);
   } catch (err) {
     console.error("Failed to load words.json:", err);
-    alert("words.json の読み込みに失敗しました。ファイルがJSONの正しい形式(構文)になっているか確認してください。");
+    alert("words.json の読み込みに失敗しました。リポジトリ上に 'words.json'（小文字）が存在するか確認してください。");
     return;
   }
 
-  // 2. WASMの関数バインドを試みる
+  // 2. WASM関数のバインド
   try {
     if (typeof Module !== 'undefined' && typeof Module.cwrap === 'function') {
       initSeed = Module.cwrap('init_seed', null, []);
@@ -29,26 +28,22 @@ async function startApp() {
       
       if (initSeed) initSeed();
       if (scenesData.length > 0) buildAndUploadMatrix();
-      console.log("WASM module bound successfully.");
-    } else {
-      console.warn("WASM module not detected. Running in fallback mode.");
+      console.log("WASM bound successfully.");
     }
   } catch (wasmErr) {
-    console.warn("WASM Init Warning (Running in fallback mode):", wasmErr);
+    console.warn("WASM initialisation warning, running in fallback mode:", wasmErr);
   }
 
-  // 3. UIの有効化とイベント登録
+  // 3. UIの有効化
   const btn = document.getElementById('next-btn');
   if (btn) {
     btn.disabled = false;
     btn.onclick = showNextScene;
   }
 
-  // 初回表示
   showNextScene();
 }
 
-// 関連度行列の転送
 function buildAndUploadMatrix() {
   const n = scenesData.length;
   const matrix = new Int32Array(n * n);
@@ -70,15 +65,19 @@ function buildAndUploadMatrix() {
     }
   }
 
-  matrixPtr = Module._malloc(matrix.length * 4);
-  Module.HEAP32.set(matrix, matrixPtr / 4);
+  // _malloc が利用可能かチェックしてメモリ確保
+  const mallocFunc = Module._malloc || (Module.exports && Module.exports.malloc);
+  if (typeof mallocFunc === 'function') {
+    matrixPtr = mallocFunc(matrix.length * 4);
+    Module.HEAP32.set(matrix, matrixPtr / 4);
+  } else {
+    console.warn("_malloc is not exported, using JS fallback routing.");
+  }
 }
 
-// カードの描画
 function showNextScene() {
   if (!scenesData || scenesData.length === 0) return;
 
-  // WASMが利用可能ならWASMで選択、不可なら順番に切替
   if (selectNextScene && matrixPtr) {
     currentIndex = selectNextScene(currentIndex, matrixPtr, scenesData.length);
   } else {
@@ -102,11 +101,10 @@ function showNextScene() {
   document.getElementById('word-ja').textContent = word.ja || '-';
 }
 
-// イベントリスナーで初期化を発火
 if (typeof Module !== 'undefined') {
   Module.onRuntimeInitialized = startApp;
 }
-// WASMの準備完了前にDOMがロードされた場合の保険
+
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     if (scenesData.length === 0) startApp();
