@@ -14,16 +14,27 @@ async function startApp() {
   const btn = document.getElementById('next-btn');
   if (btn) btn.onclick = showNextScene;
 
-  // 1. words.json 読み込み
+// 1. words.json 読み込み
   try {
-    const res = await fetch('words.json');
-    if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-    scenesData = await res.json();
-  } catch (err) {
-    console.error("Failed to load words.json:", err);
-    renderError("words.json の読み込みに失敗しました。");
-    return;
-  }
+        // キャッシュによる古いデータの読み込みを防ぐ場合はクエリパラメータを追加
+        const res = await fetch('words.json?v=' + Date.now());
+        
+        if (!res.ok) {
+        throw new Error(`HTTP Error: ${res.status} ${res.statusText}`);
+        }
+        
+        scenesData = await res.json();
+
+        // データが空配列だった場合のガード
+        if (!Array.isArray(scenesData) || scenesData.length === 0) {
+        throw new Error("words.json のデータが空または配列ではありません。");
+        }
+    } catch (err) {
+        console.error("Failed to load words.json:", err);
+        // 詳細なエラー理由を画面にも出すと原因特定が早くなります
+        renderError(`words.json の読み込みに失敗しました (${err.message})`);
+        return;
+    }
 
   // 2. WASM関数のバインドとマトリクス構築
   try {
