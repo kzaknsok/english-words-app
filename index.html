@@ -55,17 +55,16 @@
     <button id="next-btn" class="btn-action">次へ表示</button>
   </main>
 
-  <!-- WASM 初期化後に startApp を必ず呼ぶ -->
   <script>
     var Module = {
       onRuntimeInitialized: function() {
         console.log("WASM runtime initialized.");
-        startApp();   // ← ここで必ず呼ばれる
+        startApp();
       }
     };
   </script>
 
-  <!-- defer を付けて読み込み順と実行順を保証 -->
+  <!-- app.js を先に、engine.js を後に -->
   <script src="app.js" defer></script>
   <script src="engine.js" defer></script>
 </body>
