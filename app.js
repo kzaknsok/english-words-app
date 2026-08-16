@@ -5,8 +5,12 @@ let currentIndex = 0;
 let initSeed = null;
 let selectNextScene = null;
 let allocateMatrix = null;
+let isAppStarted = false; // 二重実行防止フラグ
 
 async function startApp() {
+  if (isAppStarted) return;
+  isAppStarted = true;
+
   const btn = document.getElementById('next-btn');
   if (btn) btn.onclick = showNextScene;
 
@@ -62,10 +66,11 @@ function buildAndUploadMatrix() {
     }
   }
 
-  // C言語側で確保したポインタを取得してHEAPへコピー
-  matrixPtr = allocateMatrix(matrix.length);
-  if (matrixPtr) {
-    Module.HEAP32.set(matrix, matrixPtr / 4);
+  if (typeof allocateMatrix === 'function') {
+    matrixPtr = allocateMatrix(matrix.length);
+    if (matrixPtr && Module.HEAP32) {
+      Module.HEAP32.set(matrix, matrixPtr / 4);
+    }
   }
 }
 
@@ -79,14 +84,25 @@ function showNextScene() {
   }
 
   const scene = scenesData[currentIndex];
-  document.getElementById('scene-id').textContent = scene.sceneId || `SCENE ${currentIndex + 1}`;
+  
+  // シーンID表示
+  const sceneEl = document.getElementById('scene-id');
+  if (sceneEl) sceneEl.textContent = scene.sceneId || `SCENE ${currentIndex + 1}`;
 
   const container = document.getElementById('content-container');
-  container.innerHTML = '';
-
-  renderSection(container, 'Chunk', scene.chunks, 'chunk');
-  renderSection(container, 'Idiom', scene.idioms, 'idiom');
-  renderSection(container, 'Word', scene.words, 'word');
+  
+  if (container) {
+    // 新UI構造（動的要素生成）
+    container.innerHTML = '';
+    renderSection(container, 'Chunk', scene.chunks, 'chunk');
+    renderSection(container, 'Idiom', scene.idioms, 'idiom');
+    renderSection(container, 'Word', scene.words, 'word');
+  } else {
+    // 旧UI構造へのフォールバック（コンテナがない場合）
+    updateOldUiField('chunk-en', 'chunk-ja', scene.chunks);
+    updateOldUiField('idiom-en', 'idiom-ja', scene.idioms);
+    updateOldUiField('word-en', 'word-ja', scene.words);
+  }
 }
 
 function renderSection(container, typeLabel, items, cssClass) {
@@ -116,17 +132,35 @@ function renderSection(container, typeLabel, items, cssClass) {
   });
 }
 
-function renderError(msg) {
-  const container = document.getElementById('content-container');
-  container.innerHTML = `<div class="section"><div class="en" style="color:red;">Error</div><div class="ja">${msg}</div></div>`;
+function updateOldUiField(enId, jaId, items) {
+  const enEl = document.getElementById(enId);
+  const jaEl = document.getElementById(jaId);
+  if (items && items.length > 0) {
+    if (enEl) enEl.textContent = items[0].en || '-';
+    if (jaEl) jaEl.textContent = items[0].ja || '-';
+  } else {
+    if (enEl) enEl.textContent = '-';
+    if (jaEl) jaEl.textContent = '-';
+  }
 }
 
+function renderError(msg) {
+  const container = document.getElementById('content-container');
+  if (container) {
+    container.innerHTML = `<div class="section"><div class="en" style="color:red;">Error</div><div class="ja">${msg}</div></div>`;
+  } else {
+    alert(msg);
+  }
+}
+
+// WASMロードイベントの登録
 if (typeof Module !== 'undefined') {
   Module.onRuntimeInitialized = startApp;
 }
 
+// 画面読み込み完了時のフォールバック発火
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
-    if (scenesData.length === 0) startApp();
-  }, 400);
+    if (!isAppStarted) startApp();
+  }, 500);
 });

@@ -1,16 +1,20 @@
 #include <stdlib.h>
 #include <time.h>
+#include <emscripten.h>
 
 // WASM用：JavaScriptからメモリを確保するためのラッパー関数
+EMSCRIPTEN_KEEPALIVE
 int* allocate_matrix(int size) {
     return (int*)malloc(size * sizeof(int));
 }
 
+EMSCRIPTEN_KEEPALIVE
 void init_seed() {
     srand((unsigned int)time(NULL));
 }
 
 // 次のシーンのインデックスを選択（関連度ベース）
+EMSCRIPTEN_KEEPALIVE
 int select_next_scene(int current_index, int* matrix, int total_scenes) {
     if (total_scenes <= 1) return 0;
 
@@ -23,7 +27,7 @@ int select_next_scene(int current_index, int* matrix, int total_scenes) {
         }
     }
 
-    // 重みが最も高いものの候補からランダム選択（簡易実装）
+    // 重みが最も高いものの候補からランダム選択
     int candidate_count = 0;
     int candidates[100];
     for (int i = 0; i < total_scenes; i++) {
