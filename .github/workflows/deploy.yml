@@ -25,8 +25,8 @@ jobs:
           mkdir -p dist
           emcc engine.c -O3 \
             -s WASM=1 \
-            -s EXPORTED_FUNCTIONS='["_init_seed","_select_next_scene","_allocate_matrix","_free_matrix"]' \
-            -s EXPORTED_RUNTIME_METHODS='["cwrap","HEAP32"]' \
+            -s EXPORTED_FUNCTIONS='["_init_engine","_set_matrix_cell","_select_next_scene"]' \
+            -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
             -o dist/engine.js
           
           cp index.html app.js words.json dist/

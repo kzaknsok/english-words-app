@@ -2,49 +2,58 @@
 #include <time.h>
 #include <emscripten.h>
 
-EMSCRIPTEN_KEEPALIVE
-int* allocate_matrix(int size) {
-    if (size <= 0) return NULL;
-    return (int*)malloc((size_t)size * sizeof(int));
-}
+#define MAX_SCENES 200
+
+// C内部でマトリクス領域を保持（JSにポインタを露出させない）
+static int matrix_data[MAX_SCENES * MAX_SCENES];
+static int current_matrix_size = 0;
 
 EMSCRIPTEN_KEEPALIVE
-void free_matrix(int* ptr) {
-    if (ptr != NULL) free(ptr);
-}
-
-EMSCRIPTEN_KEEPALIVE
-void init_seed() {
+void init_engine(int size) {
     srand((unsigned int)time(NULL));
+    if (size > MAX_SCENES) size = MAX_SCENES;
+    current_matrix_size = size;
+    
+    // マトリクスの初期化
+    for (int i = 0; i < size * size; i++) {
+        matrix_data[i] = 0;
+    }
 }
 
 EMSCRIPTEN_KEEPALIVE
-int select_next_scene(int current_index, int* matrix, int total_scenes) {
-    if (total_scenes <= 1 || matrix == NULL) return 0;
-    if (current_index < 0 || current_index >= total_scenes) return 0;
+void set_matrix_cell(int row, int col, int value) {
+    if (row >= 0 && row < current_matrix_size && col >= 0 && col < current_matrix_size) {
+        matrix_data[row * current_matrix_size + col] = value;
+    }
+}
+
+EMSCRIPTEN_KEEPALIVE
+int select_next_scene(int current_index) {
+    if (current_matrix_size <= 1) return 0;
+    if (current_index < 0 || current_index >= current_matrix_size) return 0;
 
     int max_weight = -1;
-    for (int i = 0; i < total_scenes; i++) {
+    for (int i = 0; i < current_matrix_size; i++) {
         if (i == current_index) continue;
-        int weight = matrix[current_index * total_scenes + i];
-        if (weight > max_weight) max_weight = weight;
+        int weight = matrix_data[current_index * current_matrix_size + i];
+        if (weight > max_weight) {
+            max_weight = weight;
+        }
     }
 
     int candidate_count = 0;
-    int* candidates = (int*)malloc((size_t)total_scenes * sizeof(int));
-    if (!candidates) return (current_index + 1) % total_scenes;
+    int candidates[MAX_SCENES];
 
-    for (int i = 0; i < total_scenes; i++) {
+    for (int i = 0; i < current_matrix_size; i++) {
         if (i == current_index) continue;
-        if (matrix[current_index * total_scenes + i] == max_weight) {
+        if (matrix_data[current_index * current_matrix_size + i] == max_weight) {
             candidates[candidate_count++] = i;
         }
     }
 
-    int result = (candidate_count > 0)
-        ? candidates[rand() % candidate_count]
-        : (current_index + 1) % total_scenes;
+    if (candidate_count > 0) {
+        return candidates[rand() % candidate_count];
+    }
 
-    free(candidates);
-    return result;
+    return (current_index + 1) % current_matrix_size;
 }

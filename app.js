@@ -1,22 +1,20 @@
 let scenesData = [];
-let matrixPtr = null;
 let currentIndex = 0;
 
-let initSeed = null;
+let initEngine = null;
+let setMatrixCell = null;
 let selectNextScene = null;
-let allocateMatrix = null;
 let isAppStarted = false;
 
 async function startApp() {
   if (isAppStarted) return;
   isAppStarted = true;
 
+  // ボタンイベント登録（最優先）
   const btn = document.getElementById('next-btn');
-  if (btn) {
-    btn.disabled = false;
-    btn.onclick = showNextScene;
-  }
+  if (btn) btn.onclick = showNextScene;
 
+  // 1. words.json 読み込み
   try {
     const res = await fetch('words.json');
     if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
@@ -27,21 +25,22 @@ async function startApp() {
     return;
   }
 
+  // 2. WASM関数のバインドとマトリクス構築
   try {
     if (typeof Module !== 'undefined' && typeof Module.cwrap === 'function') {
-      initSeed = Module.cwrap('init_seed', null, []);
-      selectNextScene = Module.cwrap('select_next_scene', 'number', ['number', 'number', 'number']);
-      allocateMatrix = Module.cwrap('allocate_matrix', 'number', ['number']);
+      initEngine = Module.cwrap('init_engine', null, ['number']);
+      setMatrixCell = Module.cwrap('set_matrix_cell', null, ['number', 'number', 'number']);
+      selectNextScene = Module.cwrap('select_next_scene', 'number', ['number']);
 
-      if (initSeed) initSeed();
-      if (scenesData.length > 0 && allocateMatrix) {
+      if (scenesData.length > 0 && initEngine && setMatrixCell) {
         buildAndUploadMatrix();
       }
     }
   } catch (wasmErr) {
-    console.warn("WASM error:", wasmErr);
+    console.warn("WASM bind error, active fallback:", wasmErr);
   }
 
+  // 初回画面表示
   showNextScene();
 }
 
@@ -49,7 +48,7 @@ function buildAndUploadMatrix() {
   const n = scenesData.length;
   if (n === 0) return;
 
-  const matrix = new Int32Array(n * n);
+  initEngine(n);
 
   for (let i = 0; i < n; i++) {
     const wordsI = (scenesData[i].words || []).map(w => (w.en || '').toLowerCase());
@@ -64,24 +63,24 @@ function buildAndUploadMatrix() {
           if (wj && (wi === wj || wi.includes(wj) || wj.includes(wi))) matches++;
         });
       });
-      matrix[i * n + j] = matches;
-    }
-  }
 
-  try {
-    // Module._malloc は一切使わない。C側の allocate_matrix を使う。
-    matrixPtr = allocateMatrix(matrix.length);
-    Module.HEAP32.set(matrix, matrixPtr >> 2);
-  } catch (e) {
-    console.warn("allocateMatrix failed:", e);
+      // WASM側の関数を呼んで1個ずつ値をセット（ポインタ不要）
+      setMatrixCell(i, j, matches);
+    }
   }
 }
 
 function showNextScene() {
-  if (!scenesData.length) return;
+  if (!scenesData || scenesData.length === 0) return;
 
-  if (selectNextScene && matrixPtr) {
-    currentIndex = selectNextScene(currentIndex, matrixPtr, scenesData.length);
+  // WASMが使えればWASMで決定、ダメならJSフォールバック（ローテーション）
+  if (typeof selectNextScene === 'function') {
+    try {
+      currentIndex = selectNextScene(currentIndex);
+    } catch (e) {
+      console.warn("WASM call failed, fallback:", e);
+      currentIndex = (currentIndex + 1) % scenesData.length;
+    }
   } else {
     currentIndex = (currentIndex + 1) % scenesData.length;
   }
@@ -101,7 +100,7 @@ function showNextScene() {
 }
 
 function renderSection(container, typeLabel, items, cssClass) {
-  if (!items || !items.length) return;
+  if (!items || !Array.isArray(items) || items.length === 0) return;
 
   items.forEach(item => {
     const sec = document.createElement('div');
@@ -133,3 +132,10 @@ function renderError(msg) {
     container.innerHTML = `<div class="section"><div class="en" style="color:red;">Error</div><div class="ja">${msg}</div></div>`;
   }
 }
+
+// 初期化トリガー
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (!isAppStarted) startApp();
+  }, 500);
+});
