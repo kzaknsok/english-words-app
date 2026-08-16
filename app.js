@@ -69,6 +69,7 @@ function buildAndUploadMatrix() {
   }
 
   try {
+    // Module._malloc は一切使わない。C側の allocate_matrix を使う。
     matrixPtr = allocateMatrix(matrix.length);
     Module.HEAP32.set(matrix, matrixPtr >> 2);
   } catch (e) {
