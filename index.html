@@ -17,7 +17,7 @@
     --border-color: #e2e8f0;
     --accent-color: #2563eb;
     
-    /* タグカラー（上品で清潔感のある配色） */
+    /* タグカラー */
     --tag-chunk-bg: #eff6ff;
     --tag-chunk-text: #1d4ed8;
     --tag-idiom-bg: #f0fdf4;
@@ -34,51 +34,51 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    -webkit-tap-highlight-color: transparent; /* モバイルのタップ時ハイライトを消去 */
+    -webkit-tap-highlight-color: transparent;
     }
 
-    body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* スマホ全画面対応の基本設定 */
+    html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* 全体スクロールを防止 */
     background-color: var(--bg-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: var(--text-main);
     line-height: 1.5;
-    
-    /* スマホでの画面固定とスクロール最適化 */
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 16px;
-    }
-
-    html {
-    height: -webkit-fill-available;
     }
 
     /* ==========================================
-    App Layout & Container (スマホサイズ固定)
+    App Layout & Container (間隔の均等化)
     ========================================== */
     .app-container {
     width: 100%;
-    max-width: 480px; /* スマホUIのベストな幅 */
-    min-height: calc(100vh - 32px);
+    height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
+    /* flexコンテナの空きスペースを要素間に均等配分 */
     justify-content: space-between;
-    gap: 16px;
+    padding: 16px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
     }
 
-    /* Header UI */
+    /* 固定ヘッダー */
     header {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
+    padding: 14px 18px;
     background: var(--card-bg);
     border-radius: 16px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
+    /* 下側の余白を自動（margin-bottom: auto）で押し広げる */
+    margin-bottom: 16px;
     }
 
     .brand-title {
@@ -99,102 +99,41 @@
     border: 1px solid var(--border-color);
     }
 
-    /* Main Content List Area */
+    /* 中央コンテンツエリア */
     #content-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    /* flex: 1 から変更し、コンテンツの高さに応じて伸びつつ余白を作れるように調整 */
     flex-grow: 1;
-    overflow-y: auto;
-    }
-
-    /* ==========================================
-    Card Component (清潔感＋リッチ)
-    ========================================== */
-    .section {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 16px 18px;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    justify-content: center; /* カードが少ない時は上下中央寄りに配置 */
+    gap: 14px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: auto;
+    margin-bottom: auto;
     }
 
-    /* 登場アニメーション */
-    .section {
-    animation: fadeInUp 0.25s ease-out forwards;
+    /* スクロールバーの非表示 */
+    #content-container::-webkit-scrollbar {
+    display: none;
     }
-
-    @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    }
-
-    /* Category Badge */
-    .tag {
-    align-self: flex-start;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    padding: 3px 8px;
-    border-radius: 6px;
-    text-transform: uppercase;
-    }
-
-    /* カテゴリごとの配色分け */
-    .section.chunk .tag {
-    background-color: var(--tag-chunk-bg);
-    color: var(--tag-chunk-text);
-    }
-
-    .section.idiom .tag {
-    background-color: var(--tag-idiom-bg);
-    color: var(--tag-idiom-text);
-    }
-
-    .section.word .tag {
-    background-color: var(--tag-word-bg);
-    color: var(--tag-word-text);
-    }
-
-    /* Text Styling */
-    .en {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: var(--text-main);
-    letter-spacing: -0.01em;
-    word-break: break-word;
-    }
-
-    .ja {
-    font-size: 0.925rem;
-    color: var(--text-muted);
-    font-weight: 400;
-    word-break: break-word;
+    #content-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
     }
 
     /* ==========================================
-    Sticky Bottom Controls & Button
+    Bottom Controls
     ========================================== */
     .controls {
-    position: sticky;
-    bottom: 0;
-    padding-top: 8px;
-    background: linear-gradient(to top, var(--bg-color) 80%, rgba(248, 250, 252, 0));
+    flex-shrink: 0;
+    /* 上側の余白をしっかり開ける */
+    margin-top: 16px;
     }
 
     #next-btn {
     width: 100%;
-    height: 54px; /* スマホで押しやすい十分なタップ領域 */
+    height: 56px;
     border: none;
     border-radius: 16px;
     background: var(--accent-color);
