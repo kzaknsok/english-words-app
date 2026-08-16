@@ -69,7 +69,8 @@ function buildAndUploadMatrix() {
   if (typeof allocateMatrix === 'function') {
     matrixPtr = allocateMatrix(matrix.length);
     if (matrixPtr && Module.HEAP32) {
-      Module.HEAP32.set(matrix, matrixPtr / 4);
+      // 4バイト（Int32Array）境界に合わせて配置
+      Module.HEAP32.set(matrix, matrixPtr >> 2);
     }
   }
 }
@@ -98,7 +99,7 @@ function showNextScene() {
     renderSection(container, 'Idiom', scene.idioms, 'idiom');
     renderSection(container, 'Word', scene.words, 'word');
   } else {
-    // 旧UI構造へのフォールバック（コンテナがない場合）
+    // 旧UI構造へのフォールバック
     updateOldUiField('chunk-en', 'chunk-ja', scene.chunks);
     updateOldUiField('idiom-en', 'idiom-ja', scene.idioms);
     updateOldUiField('word-en', 'word-ja', scene.words);
@@ -153,12 +154,13 @@ function renderError(msg) {
   }
 }
 
-// WASMロードイベントの登録
-if (typeof Module !== 'undefined') {
-  Module.onRuntimeInitialized = startApp;
-}
+// Module のグローバル宣言と初期化コールバックの確実なバインド
+var Module = Module || {};
+Module.onRuntimeInitialized = function() {
+  startApp();
+};
 
-// 画面読み込み完了時のフォールバック発火
+// DOM読み込み完了時のフォールバック発火
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     if (!isAppStarted) startApp();
