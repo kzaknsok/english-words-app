@@ -6,7 +6,6 @@
   <title>Vocab App</title>
   
   <style>
-    /* Modern Reset CSS */
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
@@ -24,7 +23,6 @@
       padding: 16px;
     }
 
-    /* App Container & Responsive Card Layout */
     .container {
       width: 100%;
       max-width: 480px;
@@ -53,6 +51,13 @@
       letter-spacing: 0.05em;
     }
 
+    /* 追加入力用コンテナ */
+    #content-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
     .section {
       background-color: #f8f9fa;
       border-left: 4px solid #007bff;
@@ -63,12 +68,21 @@
       gap: 4px;
     }
 
+    /* タグの色分け */
     .tag {
       font-size: 0.75rem;
-      font-weight: 600;
-      color: #888;
+      font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
+    .section.chunk { border-left-color: #007bff; }
+    .section.chunk .tag { color: #007bff; }
+
+    .section.idiom { border-left-color: #28a745; }
+    .section.idiom .tag { color: #28a745; }
+
+    .section.word { border-left-color: #fd7e14; }
+    .section.word .tag { color: #fd7e14; }
 
     .en {
       font-size: 1.15rem;
@@ -118,25 +132,17 @@
       <span class="scene-title" id="scene-id">SCENE --</span>
     </div>
 
-    <div class="section">
-      <span class="tag">Chunk</span>
-      <div class="en" id="chunk-en">-</div>
-      <div class="ja" id="chunk-ja">ボタンを押して開始</div>
+    <!-- JS側でデータが存在するものだけ動的に挿入するエリア -->
+    <div id="content-container">
+      <div class="section chunk">
+        <span class="tag">System</span>
+        <div class="en">Loading...</div>
+        <div class="ja">データを読み込んでいます</div>
+      </div>
     </div>
 
-    <div class="section">
-      <span class="tag">Idiom</span>
-      <div class="en" id="idiom-en">-</div>
-      <div class="ja" id="idiom-ja">-</div>
-    </div>
-
-    <div class="section">
-      <span class="tag">Word</span>
-      <div class="en" id="word-en">-</div>
-      <div class="ja" id="word-ja">-</div>
-    </div>
-
-    <button id="next-btn" class="btn-action" disabled>次へ表示 (関連優先)</button>
+    <!-- 最初から押せる状態にしておく -->
+    <button id="next-btn" class="btn-action">次へ表示</button>
   </main>
 
   <script src="engine.js"></script>

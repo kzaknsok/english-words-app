@@ -5,22 +5,23 @@ let currentIndex = 0;
 let initSeed = null;
 let selectNextScene = null;
 
+// アプリの起動処理
 async function startApp() {
-  console.log("App starting...");
+  const btn = document.getElementById('next-btn');
+  if (btn) btn.onclick = showNextScene;
 
-  // 1. words.json を取得
+  // 1. words.json の取得
   try {
     const res = await fetch('words.json');
     if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
     scenesData = await res.json();
-    console.log("words.json loaded successfully:", scenesData);
   } catch (err) {
     console.error("Failed to load words.json:", err);
-    alert("words.json の読み込みに失敗しました。リポジトリ上に 'words.json'（小文字）が存在するか確認してください。");
+    renderError("words.json の読み込みに失敗しました。ファイル構造を確認してください。");
     return;
   }
 
-  // 2. WASM関数のバインド
+  // 2. WASM関数のセットアップ（準備できていれば）
   try {
     if (typeof Module !== 'undefined' && typeof Module.cwrap === 'function') {
       initSeed = Module.cwrap('init_seed', null, []);
@@ -28,19 +29,12 @@ async function startApp() {
       
       if (initSeed) initSeed();
       if (scenesData.length > 0) buildAndUploadMatrix();
-      console.log("WASM bound successfully.");
     }
   } catch (wasmErr) {
-    console.warn("WASM initialisation warning, running in fallback mode:", wasmErr);
+    console.warn("WASM Initialization Warning (Fallback mode):", wasmErr);
   }
 
-  // 3. UIの有効化
-  const btn = document.getElementById('next-btn');
-  if (btn) {
-    btn.disabled = false;
-    btn.onclick = showNextScene;
-  }
-
+  // 初回カード表示
   showNextScene();
 }
 
@@ -65,19 +59,18 @@ function buildAndUploadMatrix() {
     }
   }
 
-  // _malloc が利用可能かチェックしてメモリ確保
   const mallocFunc = Module._malloc || (Module.exports && Module.exports.malloc);
   if (typeof mallocFunc === 'function') {
     matrixPtr = mallocFunc(matrix.length * 4);
     Module.HEAP32.set(matrix, matrixPtr / 4);
-  } else {
-    console.warn("_malloc is not exported, using JS fallback routing.");
   }
 }
 
+// 次のシーンを表示（空データスキップ & 動的レンダリング）
 function showNextScene() {
   if (!scenesData || scenesData.length === 0) return;
 
+  // WASMが使えればアルゴリズム選択、使えなければ順繰り表示
   if (selectNextScene && matrixPtr) {
     currentIndex = selectNextScene(currentIndex, matrixPtr, scenesData.length);
   } else {
@@ -86,21 +79,53 @@ function showNextScene() {
 
   const scene = scenesData[currentIndex];
 
+  // シーンタイトル設定
   document.getElementById('scene-id').textContent = scene.sceneId || `SCENE ${currentIndex + 1}`;
 
-  const chunk = (scene.chunks && scene.chunks[0]) || { en: '-', ja: '-' };
-  document.getElementById('chunk-en').textContent = chunk.en || '-';
-  document.getElementById('chunk-ja').textContent = chunk.ja || '-';
+  // コンテナ初期化
+  const container = document.getElementById('content-container');
+  container.innerHTML = '';
 
-  const idiom = (scene.idioms && scene.idioms[0]) || { en: '-', ja: '-' };
-  document.getElementById('idiom-en').textContent = idiom.en || '-';
-  document.getElementById('idiom-ja').textContent = idiom.ja || '-';
-
-  const word = (scene.words && scene.words[0]) || { en: '-', ja: '-' };
-  document.getElementById('word-en').textContent = word.en || '-';
-  document.getElementById('word-ja').textContent = word.ja || '-';
+  // 各タイプの動的描画（データが存在する場合のみ枠を生成）
+  renderSection(container, 'Chunk', scene.chunks, 'chunk');
+  renderSection(container, 'Idiom', scene.idioms, 'idiom');
+  renderSection(container, 'Word', scene.words, 'word');
 }
 
+// セクション生成用共通ヘルパー
+function renderSection(container, typeLabel, items, cssClass) {
+  if (!items || !Array.isArray(items) || items.length === 0) return;
+
+  items.forEach(item => {
+    const sec = document.createElement('div');
+    sec.className = `section ${cssClass}`;
+
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = typeLabel;
+
+    const en = document.createElement('div');
+    en.className = 'en';
+    en.textContent = item.en || '-';
+
+    const ja = document.createElement('div');
+    ja.className = 'ja';
+    ja.textContent = item.ja || '-';
+
+    sec.appendChild(tag);
+    sec.appendChild(en);
+    sec.appendChild(ja);
+
+    container.appendChild(sec);
+  });
+}
+
+function renderError(msg) {
+  const container = document.getElementById('content-container');
+  container.innerHTML = `<div class="section"><div class="en" style="color:red;">Error</div><div class="ja">${msg}</div></div>`;
+}
+
+// 初期化フック
 if (typeof Module !== 'undefined') {
   Module.onRuntimeInitialized = startApp;
 }
@@ -108,5 +133,5 @@ if (typeof Module !== 'undefined') {
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     if (scenesData.length === 0) startApp();
-  }, 500);
+  }, 300);
 });
