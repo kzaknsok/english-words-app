@@ -6,35 +6,221 @@
   <title>Vocab App</title>
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ==========================================
+    Base System & Modern Reset
+    ========================================== */
+    :root {
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --accent-color: #2563eb;
+    
+    /* タグカラー（上品で清潔感のある配色） */
+    --tag-chunk-bg: #eff6ff;
+    --tag-chunk-text: #1d4ed8;
+    --tag-idiom-bg: #f0fdf4;
+    --tag-idiom-text: #15803d;
+    --tag-word-bg: #fff7ed;
+    --tag-word-text: #c2410c;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    }
+
+    * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent; /* モバイルのタップ時ハイライトを消去 */
+    }
+
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
-      background-color: #f4f6f8;
-      display: flex; justify-content: center; align-items: center;
-      min-height: 100vh; padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.5;
+    
+    /* スマホでの画面固定とスクロール最適化 */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 16px;
     }
-    .container {
-      width: 100%; max-width: 480px; background: #fff;
-      border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-      padding: 24px; display: flex; flex-direction: column; gap: 16px;
+
+    html {
+    height: -webkit-fill-available;
     }
-    .card-header { display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; }
-    .scene-title { font-size: 0.85rem; font-weight: 700; color: #007bff; }
-    #content-container { display: flex; flex-direction: column; gap: 12px; }
-    .section { background-color: #f8f9fa; border-left: 4px solid #007bff;
-      padding: 12px 16px; border-radius: 0 8px 8px 0; display: flex; flex-direction: column; gap: 4px; }
-    .section.idiom { border-left-color: #28a745; }
-    .section.word { border-left-color: #fd7e14; }
-    .tag { font-size: 0.75rem; font-weight: 700; }
-    .en { font-size: 1.15rem; font-weight: 700; }
-    .ja { font-size: 0.95rem; color: #555; }
-    .btn-action {
-      width: 100%; padding: 14px; font-size: 1rem; font-weight: 600;
-      color: #fff; background-color: #007bff; border: none; border-radius: 10px;
-      cursor: pointer; transition: background-color 0.2s ease;
+
+    /* ==========================================
+    App Layout & Container (スマホサイズ固定)
+    ========================================== */
+    .app-container {
+    width: 100%;
+    max-width: 480px; /* スマホUIのベストな幅 */
+    min-height: calc(100vh - 32px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
     }
-    .btn-action:hover:not(:disabled) { background-color: #0056b3; }
-    .btn-action:disabled { background-color: #ccc; cursor: not-allowed; }
+
+    /* Header UI */
+    header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    }
+
+    .brand-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    }
+
+    #scene-id {
+    font-size: 0.85rem;
+    font-weight: 600;
+    background-color: var(--bg-color);
+    padding: 4px 10px;
+    border-radius: 20px;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    }
+
+    /* Main Content List Area */
+    #content-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-grow: 1;
+    overflow-y: auto;
+    }
+
+    /* ==========================================
+    Card Component (清潔感＋リッチ)
+    ========================================== */
+    .section {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    /* 登場アニメーション */
+    .section {
+    animation: fadeInUp 0.25s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    }
+
+    /* Category Badge */
+    .tag {
+    align-self: flex-start;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    }
+
+    /* カテゴリごとの配色分け */
+    .section.chunk .tag {
+    background-color: var(--tag-chunk-bg);
+    color: var(--tag-chunk-text);
+    }
+
+    .section.idiom .tag {
+    background-color: var(--tag-idiom-bg);
+    color: var(--tag-idiom-text);
+    }
+
+    .section.word .tag {
+    background-color: var(--tag-word-bg);
+    color: var(--tag-word-text);
+    }
+
+    /* Text Styling */
+    .en {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+    word-break: break-word;
+    }
+
+    .ja {
+    font-size: 0.925rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    word-break: break-word;
+    }
+
+    /* ==========================================
+    Sticky Bottom Controls & Button
+    ========================================== */
+    .controls {
+    position: sticky;
+    bottom: 0;
+    padding-top: 8px;
+    background: linear-gradient(to top, var(--bg-color) 80%, rgba(248, 250, 252, 0));
+    }
+
+    #next-btn {
+    width: 100%;
+    height: 54px; /* スマホで押しやすい十分なタップ領域 */
+    border: none;
+    border-radius: 16px;
+    background: var(--accent-color);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    #next-btn:active {
+    transform: scale(0.98);
+    background-color: #1d4ed8;
+    }
+
+    #next-btn:disabled {
+    background-color: #cbd5e1;
+    box-shadow: none;
+    cursor: not-allowed;
+    }
   </style>
 </head>
 
