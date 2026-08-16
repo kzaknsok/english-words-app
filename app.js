@@ -8,35 +8,32 @@ let isAppStarted = false;
 
 async function startApp() {
   if (isAppStarted) return;
+
+  // 1. ボタンイベント登録
+  const btn = document.getElementById('next-btn');
+  if (btn) {
+    btn.disabled = false;
+    btn.onclick = showNextScene;
+  }
+
+  // 2. words.json 読み込み
+  try {
+    const res = await fetch('words.json?v=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+    scenesData = await res.json();
+
+    if (!Array.isArray(scenesData) || scenesData.length === 0) {
+      throw new Error("words.json が空です");
+    }
+  } catch (err) {
+    console.error("Failed to load words.json:", err);
+    renderError(`words.json 読み込み失敗: ${err.message}`);
+    return;
+  }
+
   isAppStarted = true;
 
-  // ボタンイベント登録（最優先）
-  const btn = document.getElementById('next-btn');
-  if (btn) btn.onclick = showNextScene;
-
-// 1. words.json 読み込み
-  try {
-        // キャッシュによる古いデータの読み込みを防ぐ場合はクエリパラメータを追加
-        const res = await fetch('words.json?v=' + Date.now());
-        
-        if (!res.ok) {
-        throw new Error(`HTTP Error: ${res.status} ${res.statusText}`);
-        }
-        
-        scenesData = await res.json();
-
-        // データが空配列だった場合のガード
-        if (!Array.isArray(scenesData) || scenesData.length === 0) {
-        throw new Error("words.json のデータが空または配列ではありません。");
-        }
-    } catch (err) {
-        console.error("Failed to load words.json:", err);
-        // 詳細なエラー理由を画面にも出すと原因特定が早くなります
-        renderError(`words.json の読み込みに失敗しました (${err.message})`);
-        return;
-    }
-
-  // 2. WASM関数のバインドとマトリクス構築
+  // 3. WASM関数のバインドとマトリクス初期化
   try {
     if (typeof Module !== 'undefined' && typeof Module.cwrap === 'function') {
       initEngine = Module.cwrap('init_engine', null, ['number']);
@@ -48,7 +45,7 @@ async function startApp() {
       }
     }
   } catch (wasmErr) {
-    console.warn("WASM bind error, active fallback:", wasmErr);
+    console.warn("WASM bind warning (fallback active):", wasmErr);
   }
 
   // 初回画面表示
@@ -57,10 +54,12 @@ async function startApp() {
 
 function buildAndUploadMatrix() {
   const n = scenesData.length;
-  if (n === 0) return;
+  if (n === 0 || !initEngine || !setMatrixCell) return;
 
+  // C側の領域初期化
   initEngine(n);
 
+  // マトリクス構築＆C側へデータ転送
   for (let i = 0; i < n; i++) {
     const wordsI = (scenesData[i].words || []).map(w => (w.en || '').toLowerCase());
     for (let j = 0; j < n; j++) {
@@ -75,7 +74,6 @@ function buildAndUploadMatrix() {
         });
       });
 
-      // WASM側の関数を呼んで1個ずつ値をセット（ポインタ不要）
       setMatrixCell(i, j, matches);
     }
   }
@@ -84,7 +82,7 @@ function buildAndUploadMatrix() {
 function showNextScene() {
   if (!scenesData || scenesData.length === 0) return;
 
-  // WASMが使えればWASMで決定、ダメならJSフォールバック（ローテーション）
+  // WASMで次のシーンを選択（失敗した場合は連番でローテーションするフォールバック付き）
   if (typeof selectNextScene === 'function') {
     try {
       currentIndex = selectNextScene(currentIndex);
@@ -144,9 +142,7 @@ function renderError(msg) {
   }
 }
 
-// 初期化トリガー
+// 初期化
 window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    if (!isAppStarted) startApp();
-  }, 500);
+  startApp();
 });
