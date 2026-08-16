@@ -4,37 +4,40 @@ let currentIndex = 0;
 
 let initSeed = null;
 let selectNextScene = null;
+let allocateMatrix = null;
 
-// アプリの起動処理
 async function startApp() {
   const btn = document.getElementById('next-btn');
   if (btn) btn.onclick = showNextScene;
 
-  // 1. words.json の取得
+  // 1. words.json 読み込み
   try {
     const res = await fetch('words.json');
     if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
     scenesData = await res.json();
   } catch (err) {
     console.error("Failed to load words.json:", err);
-    renderError("words.json の読み込みに失敗しました。ファイル構造を確認してください。");
+    renderError("words.json の読み込みに失敗しました。");
     return;
   }
 
-  // 2. WASM関数のセットアップ（準備できていれば）
+  // 2. WASM関数バインド
   try {
     if (typeof Module !== 'undefined' && typeof Module.cwrap === 'function') {
       initSeed = Module.cwrap('init_seed', null, []);
       selectNextScene = Module.cwrap('select_next_scene', 'number', ['number', 'number', 'number']);
+      allocateMatrix = Module.cwrap('allocate_matrix', 'number', ['number']);
       
       if (initSeed) initSeed();
-      if (scenesData.length > 0) buildAndUploadMatrix();
+      if (scenesData.length > 0 && allocateMatrix) {
+        buildAndUploadMatrix();
+      }
     }
   } catch (wasmErr) {
-    console.warn("WASM Initialization Warning (Fallback mode):", wasmErr);
+    console.warn("WASM error, fallback active:", wasmErr);
   }
 
-  // 初回カード表示
+  // 初回表示
   showNextScene();
 }
 
@@ -59,18 +62,16 @@ function buildAndUploadMatrix() {
     }
   }
 
-  const mallocFunc = Module._malloc || (Module.exports && Module.exports.malloc);
-  if (typeof mallocFunc === 'function') {
-    matrixPtr = mallocFunc(matrix.length * 4);
+  // C言語側で確保したポインタを取得してHEAPへコピー
+  matrixPtr = allocateMatrix(matrix.length);
+  if (matrixPtr) {
     Module.HEAP32.set(matrix, matrixPtr / 4);
   }
 }
 
-// 次のシーンを表示（空データスキップ & 動的レンダリング）
 function showNextScene() {
   if (!scenesData || scenesData.length === 0) return;
 
-  // WASMが使えればアルゴリズム選択、使えなければ順繰り表示
   if (selectNextScene && matrixPtr) {
     currentIndex = selectNextScene(currentIndex, matrixPtr, scenesData.length);
   } else {
@@ -78,21 +79,16 @@ function showNextScene() {
   }
 
   const scene = scenesData[currentIndex];
-
-  // シーンタイトル設定
   document.getElementById('scene-id').textContent = scene.sceneId || `SCENE ${currentIndex + 1}`;
 
-  // コンテナ初期化
   const container = document.getElementById('content-container');
   container.innerHTML = '';
 
-  // 各タイプの動的描画（データが存在する場合のみ枠を生成）
   renderSection(container, 'Chunk', scene.chunks, 'chunk');
   renderSection(container, 'Idiom', scene.idioms, 'idiom');
   renderSection(container, 'Word', scene.words, 'word');
 }
 
-// セクション生成用共通ヘルパー
 function renderSection(container, typeLabel, items, cssClass) {
   if (!items || !Array.isArray(items) || items.length === 0) return;
 
@@ -125,7 +121,6 @@ function renderError(msg) {
   container.innerHTML = `<div class="section"><div class="en" style="color:red;">Error</div><div class="ja">${msg}</div></div>`;
 }
 
-// 初期化フック
 if (typeof Module !== 'undefined') {
   Module.onRuntimeInitialized = startApp;
 }
@@ -133,5 +128,5 @@ if (typeof Module !== 'undefined') {
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     if (scenesData.length === 0) startApp();
-  }, 300);
+  }, 400);
 });
