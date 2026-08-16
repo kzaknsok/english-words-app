@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocab App</title>
+  
+  <style>
+    /* Modern Reset CSS */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.5;
+      background-color: #f4f6f8;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    /* App Container & Responsive Card Layout */
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 12px;
+    }
+
+    .scene-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #007bff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section {
+      background-color: #f8f9fa;
+      border-left: 4px solid #007bff;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .en {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      word-break: break-word;
+    }
+
+    .ja {
+      font-size: 0.95rem;
+      color: #555;
+      word-break: break-word;
+    }
+
+    .btn-action {
+      width: 100%;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      margin-top: 8px;
+    }
+
+    .btn-action:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+
+    .btn-action:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-action:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <div class="card-header">
+      <span class="scene-title" id="scene-id">SCENE --</span>
+    </div>
+
+    <div class="section">
+      <span class="tag">Chunk</span>
+      <div class="en" id="chunk-en">-</div>
+      <div class="ja" id="chunk-ja">ボタンを押して開始</div>
+    </div>
+
+    <div class="section">
+      <span class="tag">Idiom</span>
+      <div class="en" id="idiom-en">-</div>
+      <div class="ja" id="idiom-ja">-</div>
+    </div>
+
+    <div class="section">
+      <span class="tag">Word</span>
+      <div class="en" id="word-en">-</div>
+      <div class="ja" id="word-ja">-</div>
+    </div>
+
+    <button id="next-btn" class="btn-action" disabled>次へ表示 (関連優先)</button>
+  </main>
+
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
