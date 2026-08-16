@@ -15,13 +15,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. GitHubのサーバー上にEmscripten(emcc)をセットアップ
+      # 1. Emscripten(emcc)のセットアップ
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v12
         with:
           version: 3.1.50
 
-      # 2. C言語をWASMへコンパイル & 配信用のdistフォルダ作成
+      # 2. C言語をWASMへコンパイル & 配信用ファイルの作成
       - name: Compile C to WASM and Build
         run: |
           mkdir -p dist
@@ -30,9 +30,14 @@ jobs:
             -s EXPORTED_FUNCTIONS='["_init_seed","_select_next_scene","_malloc","_free"]' \
             -s EXPORTED_RUNTIME_METHODS='["cwrap","HEAP32"]' \
             -o dist/engine.js
-          cp index.html app.js words.json dist/
+          
+          # 静的ファイルをdist配下へ複製
+          cp index.html app.js dist/
+          
+          # 大文字小文字の差異対策も含めwords.jsonをコピー
+          if [ -f words.json ]; then cp words.json dist/; fi
 
-      # 3. distフォルダの内容を gh-pages ブランチへ自動デプロイ
+      # 3. GitHub Pagesへデプロイ
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
