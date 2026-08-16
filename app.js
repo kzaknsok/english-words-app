@@ -5,31 +5,28 @@ let currentIndex = 0;
 let initSeed = null;
 let selectNextScene = null;
 let allocateMatrix = null;
-let isAppStarted = false; // 二重実行防止フラグ
+let isAppStarted = false;
 
 async function startApp() {
   if (isAppStarted) return;
   isAppStarted = true;
 
-  // 0. ボタンイベントを最優先で割り当て・有効化
   const btn = document.getElementById('next-btn');
   if (btn) {
     btn.disabled = false;
     btn.onclick = showNextScene;
   }
 
-  // 1. words.json 読み込み
   try {
     const res = await fetch('words.json');
     if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
     scenesData = await res.json();
   } catch (err) {
     console.error("Failed to load words.json:", err);
-    renderError("words.json の読み込みに失敗しました。ファイルパスまたはWebサーバー経由（ローカルサーバー）で開いているか確認してください。");
-    return; // JSON読み込み失敗時はここで処理を中断（WASM処理へ進ませない）
+    renderError("words.json の読み込みに失敗しました。");
+    return;
   }
 
-  // 2. WASM関数バインド
   try {
     if (typeof Module !== 'undefined' && typeof Module.cwrap === 'function') {
       initSeed = Module.cwrap('init_seed', null, []);
@@ -42,10 +39,9 @@ async function startApp() {
       }
     }
   } catch (wasmErr) {
-    console.warn("WASM error, fallback active:", wasmErr);
+    console.warn("WASM error:", wasmErr);
   }
 
-  // 初回表示
   showNextScene();
 }
 
@@ -72,26 +68,20 @@ function buildAndUploadMatrix() {
     }
   }
 
-  // _malloc が安全に存在するか確認してから実行
-  if (typeof allocateMatrix === 'function') {
-    try {
-      matrixPtr = allocateMatrix(matrix.length);
-      if (matrixPtr && Module.HEAP32) {
-        Module.HEAP32.set(matrix, matrixPtr >> 2);
-      }
-    } catch (e) {
-      console.warn("allocateMatrix execution failed:", e);
-    }
+  try {
+    matrixPtr = allocateMatrix(matrix.length);
+    Module.HEAP32.set(matrix, matrixPtr >> 2);
+  } catch (e) {
+    console.warn("allocateMatrix failed:", e);
   }
 }
 
 function showNextScene() {
-  if (!scenesData || scenesData.length === 0) return;
+  if (!scenesData.length) return;
 
   if (selectNextScene && matrixPtr) {
     currentIndex = selectNextScene(currentIndex, matrixPtr, scenesData.length);
   } else {
-    // WASMが使えない場合のフォールバック（順繰り表示）
     currentIndex = (currentIndex + 1) % scenesData.length;
   }
 
@@ -110,7 +100,7 @@ function showNextScene() {
 }
 
 function renderSection(container, typeLabel, items, cssClass) {
-  if (!items || !Array.isArray(items) || items.length === 0) return;
+  if (!items || !items.length) return;
 
   items.forEach(item => {
     const sec = document.createElement('div');
@@ -140,14 +130,5 @@ function renderError(msg) {
   const container = document.getElementById('content-container');
   if (container) {
     container.innerHTML = `<div class="section"><div class="en" style="color:red;">Error</div><div class="ja">${msg}</div></div>`;
-  } else {
-    alert(msg);
   }
 }
-
-// DOM読み込み完了時のフォールバック発火
-window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    if (!isAppStarted) startApp();
-  }, 500);
-});
