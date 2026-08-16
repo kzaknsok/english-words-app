@@ -9,14 +9,12 @@ let isAppStarted = false;
 async function startApp() {
   if (isAppStarted) return;
 
-  // 1. ボタンイベント登録
   const btn = document.getElementById('next-btn');
   if (btn) {
     btn.disabled = false;
     btn.onclick = showNextScene;
   }
 
-  // 2. words.json 読み込み
   try {
     const res = await fetch('words.json?v=' + Date.now());
     if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
@@ -33,7 +31,7 @@ async function startApp() {
 
   isAppStarted = true;
 
-  // 3. WASM関数のバインドとマトリクス初期化
+  // WASM関数のバインドとマトリクス初期化
   try {
     if (typeof Module !== 'undefined' && typeof Module.cwrap === 'function') {
       initEngine = Module.cwrap('init_engine', null, ['number']);
@@ -48,7 +46,6 @@ async function startApp() {
     console.warn("WASM bind warning (fallback active):", wasmErr);
   }
 
-  // 初回画面表示
   showNextScene();
 }
 
@@ -56,10 +53,9 @@ function buildAndUploadMatrix() {
   const n = scenesData.length;
   if (n === 0 || !initEngine || !setMatrixCell) return;
 
-  // C側の領域初期化
+  // C側の静的領域を初期化（mallocは使いません）
   initEngine(n);
 
-  // マトリクス構築＆C側へデータ転送
   for (let i = 0; i < n; i++) {
     const wordsI = (scenesData[i].words || []).map(w => (w.en || '').toLowerCase());
     for (let j = 0; j < n; j++) {
@@ -82,7 +78,6 @@ function buildAndUploadMatrix() {
 function showNextScene() {
   if (!scenesData || scenesData.length === 0) return;
 
-  // WASMで次のシーンを選択（失敗した場合は連番でローテーションするフォールバック付き）
   if (typeof selectNextScene === 'function') {
     try {
       currentIndex = selectNextScene(currentIndex);
@@ -142,7 +137,13 @@ function renderError(msg) {
   }
 }
 
-// 初期化
-window.addEventListener('DOMContentLoaded', () => {
-  startApp();
-});
+// WASMロード待ち
+if (typeof Module !== 'undefined') {
+  Module.onRuntimeInitialized = () => {
+    startApp();
+  };
+} else {
+  window.addEventListener('DOMContentLoaded', () => {
+    startApp();
+  });
+}
