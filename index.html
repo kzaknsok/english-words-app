@@ -104,12 +104,16 @@
     .card:hover .speaker-btn { opacity: 1; }
     .speaker-btn.playing { transform: scale(1.3); opacity: 1; }
 
-    /* タイピングビュー用カード */
+    /* 早打ちビュー用カード（コンパクト・一体化レイアウト） */
+    #view-typing {
+      justify-content: center; /* 画面中央付近に配置 */
+      gap: 16px;
+    }
+
     .typing-card {
       background: var(--glass-bg); backdrop-filter: blur(16px);
-      border-radius: 24px; padding: 24px 20px; border: 1px solid var(--glass-border);
-      box-shadow: var(--glass-shadow); text-align: center; display: flex; flex-direction: column; gap: 16px;
-      margin: auto 0;
+      border-radius: 24px; padding: 20px 18px; border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow); text-align: center; display: flex; flex-direction: column; gap: 14px;
     }
 
     .timer-bar-container {
@@ -119,11 +123,11 @@
       width: 100%; height: 100%; background: var(--accent-green); transition: width 0.05s linear;
     }
 
-    .target-ja { font-size: 1.3rem; font-weight: 700; color: #ffffff; min-height: 2.4em; display: flex; align-items: center; justify-content: center; }
+    .target-ja { font-size: 1.25rem; font-weight: 700; color: #ffffff; min-height: 2.0em; display: flex; align-items: center; justify-content: center; }
     
     .type-input {
-      width: 100%; height: 50px; background: rgba(0, 0, 0, 0.2); border: 2px solid var(--glass-border);
-      border-radius: 14px; color: #fff; font-size: 1.1rem; text-align: center; outline: none;
+      width: 100%; height: 48px; background: rgba(0, 0, 0, 0.2); border: 2px solid var(--glass-border);
+      border-radius: 14px; color: #fff; font-size: 1.05rem; text-align: center; outline: none;
       transition: all 0.2s;
     }
     .type-input:focus { border-color: #6366f1; }
@@ -132,15 +136,16 @@
 
     .typing-feedback { font-size: 0.85rem; height: 1.2em; color: var(--text-muted); }
 
-    /* アクションボタン */
+    /* アクションボタン（共通スタイル） */
     .controls { flex-shrink: 0; }
-    #next-btn {
-      width: 100%; height: 56px; border: none; border-radius: 20px;
+    .next-action-btn {
+      width: 100%; height: 52px; border: none; border-radius: 20px;
       background: var(--accent-gradient); color: #ffffff; font-size: 1rem; font-weight: 600;
       box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5); cursor: pointer;
       display: flex; justify-content: center; align-items: center; gap: 10px;
+      transition: transform 0.1s ease;
     }
-    #next-btn:active { transform: scale(0.97); }
+    .next-action-btn:active { transform: scale(0.97); }
   </style>
 </head>
 
@@ -167,7 +172,7 @@
       </div>
     </main>
 
-    <!-- ビュー2: 早撃ちタイピング -->
+    <!-- ビュー2: 早撃ちタイピング（カード直下にスキップボタンを配置） -->
     <main id="view-typing" class="view-screen">
       <div class="typing-card">
         <div class="timer-bar-container"><div id="timer-bar"></div></div>
@@ -175,17 +180,22 @@
         <input type="text" id="typing-input" class="type-input" placeholder="英文を入力..." autocomplete="off" autocapitalize="none" spellcheck="false">
         <div id="typing-feedback" class="typing-feedback">即打ちでスピーキング脳を育成</div>
       </div>
+      <!-- 早撃ちモード用ボタン -->
+      <button id="typing-next-btn" class="next-action-btn">
+        <span>スキップして次へ</span>
+      </button>
     </main>
 
-    <div class="controls">
-      <button id="next-btn">
-        <span id="btn-text">次のシーンへ</span>
+    <!-- 閲覧モード用下部コントロールバー -->
+    <div id="study-controls" class="controls">
+      <button id="study-next-btn" class="next-action-btn">
+        <span>次のシーンへ</span>
       </button>
     </div>
   </div>
 
   <!-- WASMの自動生成ファイル(engine.js)が存在する場合は読み込む -->
   <script src="engine.js"></script>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
