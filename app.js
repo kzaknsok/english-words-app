@@ -196,14 +196,26 @@ function renderCurrentScene() {
       const cardEl = document.createElement('div');
       cardEl.className = 'card';
       cardEl.style.cursor = 'pointer'; // クリック可能であることを明示
+      
+      // スピーカーアイコン付きのレイアウトを出力
       cardEl.innerHTML = `
-        <div class="en">${card.en}</div>
-        <div class="ja">${card.ja}</div>
+        <div class="card-content">
+          <div class="en">${card.en}</div>
+          <div class="ja">${card.ja}</div>
+        </div>
+        <button class="speaker-btn" aria-label="音声再生">🔊</button>
       `;
-      // カードクリック時にそのフレーズ/単語を再生
+
+      // カード全体またはスピーカーアイコンのタップ/クリックで音声再生
       cardEl.addEventListener('click', () => {
+        const btn = cardEl.querySelector('.speaker-btn');
+        if (btn) {
+          btn.classList.add('playing');
+          setTimeout(() => btn.classList.remove('playing'), 300);
+        }
         speakEnglish(card.en);
       });
+
       studyContainer.appendChild(cardEl);
     });
   }
@@ -309,7 +321,7 @@ function checkTypingAnswer(isForce) {
     // 0.8秒後に次の問題へ
     setTimeout(() => {
       currentCardIndex++;
-      resetTypingState(); // ※次の問題が表示される時に再び resetTypingState 内で speakEnglish が実行されます
+      resetTypingState(); // 次の問題表示時にspeakEnglishが実行されます
     }, 800);
 
   } else if (isForce && userText.length > 0) {
