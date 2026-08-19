@@ -1,19 +1,20 @@
 // --- グローバル状態管理 ---
 let scenesData = [];
 let currentSceneIndex = 0;
+let currentCardIndex = 0; // シーン内のカード位置
 let currentView = 'study'; // 'study' | 'typing'
 
 // タイピング・応答時間計測用
 let startTime = 0;
 let timerInterval = null;
-const TIME_LIMIT_SEC = 5.0; // タイマー制限時間（秒）
+const TIME_LIMIT_SEC = 5.0;
 
 // WASM関数バインド用
 let wasmInitEngine = null;
 let wasmSetMatrixCell = null;
 let wasmSelectNextScene = null;
 
-// --- Web Audio API（効果音生成エンジン） ---
+// --- Web Audio API（効果音生成） ---
 let audioCtx = null;
 
 function initAudio() {
@@ -28,7 +29,6 @@ function initAudio() {
   }
 }
 
-// 1. ミス時のブザー音（低音の鋸波）
 function playErrorSound() {
   initAudio();
   if (!audioCtx) return;
@@ -50,7 +50,6 @@ function playErrorSound() {
   osc.stop(audioCtx.currentTime + 0.25);
 }
 
-// 2. 正解時のピンポン音
 function playSuccessSound() {
   initAudio();
   if (!audioCtx) return;
@@ -60,8 +59,8 @@ function playSuccessSound() {
   const gain = audioCtx.createGain();
 
   osc.type = 'sine';
-  osc.frequency.setValueAtTime(523.25, now); // C5
-  osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+  osc.frequency.setValueAtTime(523.25, now);
+  osc.frequency.setValueAtTime(659.25, now + 0.1);
 
   gain.gain.setValueAtTime(0.2, now);
   gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
@@ -73,69 +72,71 @@ function playSuccessSound() {
   osc.stop(now + 0.3);
 }
 
-// 3. 英語の音声読み上げ (SpeechSynthesis)
+// 英語の音声読み上げ（キャンセルの徹底とエラーハンドリングを追加）
 function speakEnglish(text) {
-  if (!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel(); // 前の音声を停止
+  if (!('speechSynthesis' in window) || !text) return;
+  
+  // 過去の再生キューをクリア
+  window.speechSynthesis.cancel();
+
   const uttr = new SpeechSynthesisUtterance(text);
   uttr.lang = 'en-US';
   uttr.rate = 1.0;
-  window.speechSynthesis.speak(uttr);
-}
-
-// --- WASM (Emscripten) 初期化 ---
-if (typeof Module !== 'undefined') {
-  Module.onRuntimeInitialized = () => {
-    try {
-      wasmInitEngine = Module.cwrap('init_engine', null, ['number']);
-      wasmSetMatrixCell = Module.cwrap('set_matrix_cell', null, ['number', 'number', 'number']);
-      wasmSelectNextScene = Module.cwrap('select_next_scene', 'number', ['number', 'number', 'number']);
-
-      if (scenesData.length > 0 && wasmInitEngine) {
-        wasmInitEngine(scenesData.length);
-      }
-      console.log('WASM Engine Loaded Successfully');
-    } catch (e) {
-      console.warn('WASM initialization skipped or failed:', e);
-    }
-  };
+  
+  // ブロック対策として少しだけ遅延させて再生を確実に実行
+  setTimeout(() => {
+    window.speechSynthesis.speak(uttr);
+  }, 50);
 }
 
 // --- 初期ロード処理 ---
 document.addEventListener('DOMContentLoaded', () => {
-  // イベントリスナーの登録
   document.getElementById('next-btn').addEventListener('click', onNextBtnClick);
   
   const typeInput = document.getElementById('typing-input');
   typeInput.addEventListener('input', onTypingInput);
   typeInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      checkTypingAnswer(true); // Enterで強制判定
+      checkTypingAnswer(true);
     }
   });
 
-  // ユーザーのファーストタップでAudioContextを有効化
-  document.body.addEventListener('click', initAudio, { once: true });
+  // 最初のクリック時にオーディオコンテキストを解放
+  document.body.addEventListener('click', () => {
+    initAudio();
+    // ダミーの読み上げを入れてブラウザの自動再生ブロックを解除
+    if ('speechSynthesis' in window && speechSynthesis.speaking === false) {
+      const u = new SpeechSynthesisUtterance('');
+      speechSynthesis.speak(u);
+    }
+  }, { once: true });
 
-  // データ読み込み
   fetch('words.json')
     .then(res => res.json())
     .then(data => {
       scenesData = data;
-      if (wasmInitEngine && scenesData.length > 0) {
-        wasmInitEngine(scenesData.length);
-      }
       renderCurrentScene();
     })
     .catch(err => {
-      console.error('Failed to load words.json:', err);
+      console.error('words.jsonの読み込みに失敗しました:', err);
     });
 });
 
-// --- ビューの切り替え ---
+// --- シーン内の全カード（chunks/idioms/words）を1つの配列にまとめる ---
+function getAllCardsInScene(scene) {
+  if (!scene) return [];
+  let list = [];
+  if (scene.chunks) list = list.concat(scene.chunks);
+  if (scene.idioms) list = list.concat(scene.idioms);
+  if (scene.words) list = list.concat(scene.words);
+  return list;
+}
+
+// --- ビュー切り替え ---
 function switchView(viewName) {
   initAudio();
   currentView = viewName;
+  currentCardIndex = 0; // 切り替え時に問題インデックスをリセット
 
   document.getElementById('tab-study').classList.toggle('active', viewName === 'study');
   document.getElementById('tab-typing').classList.toggle('active', viewName === 'typing');
@@ -158,14 +159,16 @@ function renderCurrentScene() {
   if (scenesData.length === 0) return;
 
   const scene = scenesData[currentSceneIndex];
-  document.getElementById('scene-id').textContent = `SCENE ${scene.id + 1}`;
+  const sceneLabel = scene.sceneId ? scene.sceneId.toUpperCase() : `SCENE ${currentSceneIndex + 1}`;
+  document.getElementById('scene-id').textContent = sceneLabel;
 
-  // 1. 閲覧ビューの更新
+  const cards = getAllCardsInScene(scene);
+
+  // 1. 閲覧モードの描画
   const studyContainer = document.getElementById('study-cards-container');
-  studyContainer.innerHTML = '';
-
-  if (scene.cards && scene.cards.length > 0) {
-    scene.cards.forEach(card => {
+  if (studyContainer) {
+    studyContainer.innerHTML = '';
+    cards.forEach(card => {
       const cardEl = document.createElement('div');
       cardEl.className = 'card';
       cardEl.innerHTML = `
@@ -174,17 +177,9 @@ function renderCurrentScene() {
       `;
       studyContainer.appendChild(cardEl);
     });
-  } else {
-    const cardEl = document.createElement('div');
-    cardEl.className = 'card';
-    cardEl.innerHTML = `
-      <div class="en">${scene.en}</div>
-      <div class="ja">${scene.ja}</div>
-    `;
-    studyContainer.appendChild(cardEl);
   }
 
-  // 2. 早撃ちビューの更新
+  // 2. 早打ちモードの描画
   if (currentView === 'typing') {
     resetTypingState();
   }
@@ -195,7 +190,20 @@ function resetTypingState() {
   const scene = scenesData[currentSceneIndex];
   if (!scene) return;
 
-  document.getElementById('typing-ja').textContent = scene.ja;
+  const cards = getAllCardsInScene(scene);
+
+  // 全問終わっていたら次のシーンへ進む
+  if (currentCardIndex >= cards.length) {
+    advanceNextScene(1.0, true);
+    return;
+  }
+
+  const currentCard = cards[currentCardIndex];
+
+  document.getElementById('typing-ja').textContent = currentCard.ja;
+  document.getElementById('scene-id').textContent = 
+    `${scene.sceneId ? scene.sceneId.toUpperCase() : 'SCENE'} (${currentCardIndex + 1}/${cards.length})`;
+
   const input = document.getElementById('typing-input');
   input.value = '';
   input.className = 'type-input';
@@ -216,10 +224,9 @@ function startTimer() {
   timerInterval = setInterval(() => {
     const elapsed = (performance.now() - startTime) / 1000;
     const remainingRatio = Math.max(0, (TIME_LIMIT_SEC - elapsed) / TIME_LIMIT_SEC);
-    timerBar.style.width = `${remainingRatio * 100}%`;
+    if (timerBar) timerBar.style.width = `${remainingRatio * 100}%`;
 
     if (elapsed >= TIME_LIMIT_SEC) {
-      // タイムオーバー
       stopTimer();
       handleWrongAnswer("時間切れ！");
     }
@@ -233,7 +240,6 @@ function stopTimer() {
   }
 }
 
-// 文字列比較の正規化（記号・大文字小文字の差異を無視）
 function normalizeText(str) {
   return str.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
 }
@@ -246,12 +252,16 @@ function checkTypingAnswer(isForce) {
   const scene = scenesData[currentSceneIndex];
   if (!scene) return;
 
+  const cards = getAllCardsInScene(scene);
+  if (currentCardIndex >= cards.length) return;
+
+  const currentCard = cards[currentCardIndex];
   const inputEl = document.getElementById('typing-input');
   const userText = normalizeText(inputEl.value);
-  const targetText = normalizeText(scene.en);
+  const targetText = normalizeText(currentCard.en);
 
-  if (userText === targetText) {
-    // 正解処理
+  // 正解判定
+  if (userText === targetText && targetText.length > 0) {
     stopTimer();
     const responseTime = (performance.now() - startTime) / 1000;
 
@@ -261,16 +271,17 @@ function checkTypingAnswer(isForce) {
     document.getElementById('typing-feedback').textContent = `🎯 PERFECT! (${responseTime.toFixed(2)}秒)`;
     document.getElementById('typing-feedback').style.color = 'var(--accent-green)';
 
+    // 効果音と読み上げを即時呼び出し
     playSuccessSound();
-    speakEnglish(scene.en);
+    speakEnglish(currentCard.en);
 
-    // WASMに結果を送り、1.2秒後に次のシーンへ
+    // 0.8秒後に次の問題へ
     setTimeout(() => {
-      advanceNextScene(responseTime, true);
-    }, 1200);
+      currentCardIndex++;
+      resetTypingState();
+    }, 800);
 
   } else if (isForce && userText.length > 0) {
-    // Enterキー等で間違えた場合
     handleWrongAnswer("惜しい！もう一度確認しよう");
   }
 }
@@ -282,27 +293,24 @@ function handleWrongAnswer(message) {
   document.getElementById('typing-feedback').textContent = message;
   document.getElementById('typing-feedback').style.color = 'var(--accent-red)';
 
-  // 間違えた場合の警告音を再生
   playErrorSound();
 
-  // WASMへ間違い（is_correct = 0）として登録
   const responseTime = (performance.now() - startTime) / 1000;
   if (wasmSelectNextScene) {
     wasmSelectNextScene(currentSceneIndex, responseTime, 0);
   }
 }
 
-// --- 次のシーンへの遷移統括 ---
+// --- 「次へ」ボタンクリック時の挙動修正 ---
 function onNextBtnClick() {
   initAudio();
   if (currentView === 'study') {
-    // 閲覧モード時の「次へ」ボタン
-    const scene = scenesData[currentSceneIndex];
-    if (scene) speakEnglish(scene.en); // 英語音声を再生
+    // 閲覧モード：単純に次のシーンへ進み画面を更新する
     advanceNextScene(1.0, true);
   } else {
-    // 早撃ちモード時の「スキップ」ボタン
+    // 早打ちモード：スキップ処理
     stopTimer();
+    currentCardIndex = 0; // カード位置をリセットして次のシーンへ
     advanceNextScene(TIME_LIMIT_SEC, false);
   }
 }
@@ -310,13 +318,15 @@ function onNextBtnClick() {
 function advanceNextScene(responseTimeSec, isCorrect) {
   if (scenesData.length === 0) return;
 
-  // WASMエンジンから次の最適なシーンインデックスを取得
+  currentCardIndex = 0; // カード位置リセット
+
   if (wasmSelectNextScene) {
     currentSceneIndex = wasmSelectNextScene(currentSceneIndex, responseTimeSec, isCorrect ? 1 : 0);
   } else {
-    // WASM未読み込み時のフォールバック（順番送り）
+    // WASMがない場合は次のシーンへループ遷移
     currentSceneIndex = (currentSceneIndex + 1) % scenesData.length;
   }
 
+  // 画面を再描画
   renderCurrentScene();
 }
