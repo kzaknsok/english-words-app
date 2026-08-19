@@ -3,308 +3,156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Vocab App</title>
+  <title>Fast Draw Speaking</title>
   <link rel="icon" href="data:,">
 
   <style>
-    /* ==========================================
-       Base System & Dynamic Glassmorphism Reset
-       ========================================== */
     :root {
-      /* 高級感と透明感のあるグラデーション背景 */
       --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-      
-      /* ガラスエフェクト用カラー (透過ホワイト) */
       --glass-bg: rgba(255, 255, 255, 0.07);
-      --glass-bg-hover: rgba(255, 255, 255, 0.12);
       --glass-border: rgba(255, 255, 255, 0.15);
       --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-      
-      /* テキストカラー */
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       
-      /* タグ（ネオン感のある上質な半透明アクセント） */
-      --tag-chunk-bg: rgba(59, 130, 246, 0.2);
-      --tag-chunk-text: #60a5fa;
-      --tag-chunk-border: rgba(96, 165, 250, 0.3);
-
-      --tag-idiom-bg: rgba(16, 185, 129, 0.2);
-      --tag-idiom-text: #34d399;
-      --tag-idiom-border: rgba(52, 211, 153, 0.3);
-
-      --tag-word-bg: rgba(249, 115, 22, 0.2);
-      --tag-word-text: #fb923c;
-      --tag-word-border: rgba(251, 146, 60, 0.3);
-
       --accent-gradient: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+      --accent-green: #34d399;
+      --accent-red: #f87171;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+      width: 100%; height: 100%; overflow: hidden;
       background: var(--bg-gradient);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       color: var(--text-main);
-      line-height: 1.5;
     }
 
-    /* ==========================================
-       App Layout & Centered Flexbox Container
-       ========================================== */
     .app-container {
-      width: 100%;
-      height: 100vh;
-      height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between; /* 上下左右に適切な余白を配分 */
+      width: 100%; height: 100vh; height: 100dvh;
+      display: flex; flex-direction: column; justify-content: space-between;
       padding: 16px;
-      padding-top: max(16px, env(safe-area-inset-top));
-      padding-bottom: max(16px, env(safe-area-inset-bottom));
-      padding-left: max(16px, env(safe-area-inset-left));
-      padding-right: max(16px, env(safe-area-inset-right));
-      max-width: 480px;
-      margin: 0 auto;
+      max-width: 480px; margin: 0 auto;
     }
 
-    /* 固定ヘッダー（透明ガラススタイル） */
+    /* ナビゲーションヘッダー */
     header {
-      flex-shrink: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 18px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 20px;
-      border: 1px solid var(--glass-border);
-      box-shadow: var(--glass-shadow);
+      flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px; background: var(--glass-bg); backdrop-filter: blur(12px);
+      border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
     }
 
-    .brand-title {
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      text-transform: uppercase;
+    .nav-tabs { display: flex; gap: 6px; }
+
+    .tab-btn {
+      background: transparent; border: none; color: var(--text-muted);
+      padding: 6px 14px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 255, 255, 0.15); color: #ffffff;
+      border: 1px solid var(--glass-border);
     }
 
     #scene-id {
-      font-size: 0.8rem;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 4px 12px;
-      border-radius: 20px;
-      color: #ffffff;
-      border: 1px solid var(--glass-border);
+      font-size: 0.75rem; font-weight: 600; background: rgba(255, 255, 255, 0.1);
+      padding: 4px 10px; border-radius: 16px; border: 1px solid var(--glass-border);
     }
 
-    /* 中央コンテンツエリア（完全垂直中央寄せ・画面フィット） */
-    #content-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center; /* カード群を縦方向中央へ綺麗に納める */
-      gap: 12px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 12px 0;
+    /* ビュー切り替え */
+    .view-screen {
+      flex: 1; display: none; flex-direction: column; justify-content: center;
+      gap: 12px; overflow-y: auto; padding: 12px 0;
+    }
+    .view-screen.active { display: flex; }
+
+    /* 学習ビュー用カード */
+    .card {
+      background: var(--glass-bg); backdrop-filter: blur(16px);
+      border-radius: 20px; padding: 16px 20px; border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow); display: flex; flex-direction: column; gap: 6px;
+    }
+    .card .en { font-size: 1.15rem; font-weight: 600; }
+    .card .ja { font-size: 0.9rem; color: var(--text-muted); }
+
+    /* タイピングビュー用カード */
+    .typing-card {
+      background: var(--glass-bg); backdrop-filter: blur(16px);
+      border-radius: 24px; padding: 24px 20px; border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow); text-align: center; display: flex; flex-direction: column; gap: 16px;
     }
 
-    /* スクロールバー非表示 */
-    #content-container::-webkit-scrollbar {
-      display: none;
+    .timer-bar-container {
+      width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden;
     }
-    #content-container {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    #timer-bar {
+      width: 100%; height: 100%; background: var(--accent-green); transition: width 0.05s linear;
     }
 
-    /* ==========================================
-       Glassmorphism Card Component
-       ========================================== */
-    .section {
-      flex-shrink: 0;
-      background: var(--glass-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 20px;
-      padding: 16px 20px;
-      border: 1px solid var(--glass-border);
-      box-shadow: var(--glass-shadow);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    .target-ja { font-size: 1.3rem; font-weight: 700; color: #ffffff; min-height: 2.4em; display: flex; align-items: center; justify-content: center; }
+    
+    .type-input {
+      width: 100%; height: 50px; background: rgba(0, 0, 0, 0.2); border: 2px solid var(--glass-border);
+      border-radius: 14px; color: #fff; font-size: 1.1rem; text-align: center; outline: none;
+      transition: all 0.2s;
     }
+    .type-input:focus { border-color: #6366f1; }
+    .type-input.correct { border-color: var(--accent-green); background: rgba(52, 211, 153, 0.15); }
+    .type-input.wrong { border-color: var(--accent-red); background: rgba(248, 113, 113, 0.15); }
 
-    /* タップ時のクリアなフィードバック */
-    .section:active {
-      transform: scale(0.98);
-      background: var(--glass-bg-hover);
-    }
+    .typing-feedback { font-size: 0.85rem; height: 1.2em; color: var(--text-muted); }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.97);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    /* タグスタイリング */
-    .tag {
-      align-self: flex-start;
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      padding: 3px 10px;
-      border-radius: 8px;
-      text-transform: uppercase;
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-muted);
-      border: 1px solid transparent;
-    }
-
-    .section.chunk .tag {
-      background: var(--tag-chunk-bg);
-      color: var(--tag-chunk-text);
-      border-color: var(--tag-chunk-border);
-    }
-
-    .section.idiom .tag {
-      background: var(--tag-idiom-bg);
-      color: var(--tag-idiom-text);
-      border-color: var(--tag-idiom-border);
-    }
-
-    .section.word .tag {
-      background: var(--tag-word-bg);
-      color: var(--tag-word-text);
-      border-color: var(--tag-word-border);
-    }
-
-    /* 英和テキスト */
-    .en {
-      font-size: 1.15rem;
-      font-weight: 600;
-      color: #ffffff;
-      letter-spacing: -0.01em;
-      word-break: break-word;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .ja {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      font-weight: 400;
-      word-break: break-word;
-    }
-
-    /* スピーカーアイコンのスタイル */
-    .speaker-icon {
-      font-size: 0.9em;
-      opacity: 0.6;
-      transition: opacity 0.2s;
-    }
-
-    .section:active .speaker-icon {
-      opacity: 1;
-    }
-
-    /* ==========================================
-       Bottom Controls (リッチグラデーションボタン)
-       ========================================== */
-    .controls {
-      flex-shrink: 0;
-    }
-
+    /* アクションボタン */
+    .controls { flex-shrink: 0; }
     #next-btn {
-      width: 100%;
-      height: 56px;
-      border: none;
-      border-radius: 20px;
-      background: var(--accent-gradient);
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.2s ease;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 100%; height: 56px; border: none; border-radius: 20px;
+      background: var(--accent-gradient); color: #ffffff; font-size: 1rem; font-weight: 600;
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5); cursor: pointer;
+      display: flex; justify-content: center; align-items: center; gap: 10px;
     }
-
-    #next-btn:active {
-      transform: scale(0.97);
-      box-shadow: 0 5px 15px -5px rgba(99, 102, 241, 0.3);
-    }
-
-    #next-btn:disabled {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-muted);
-      box-shadow: none;
-      border-color: transparent;
-      cursor: not-allowed;
-    }
+    #next-btn:active { transform: scale(0.97); }
   </style>
 </head>
 
 <body>
   <div class="app-container">
     <header>
-      <span class="brand-title">Scene Navigator</span>
+      <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchView('study')">📖 閲覧</button>
+        <button class="tab-btn" onclick="switchView('typing')">⚡ 早撃ち</button>
+      </div>
       <span id="scene-id">SCENE --</span>
     </header>
 
-    <main id="content-container">
-      <div class="section">
-        <span class="tag">System</span>
+    <!-- ビュー1: 閲覧（従来のカード学習） -->
+    <main id="view-study" class="view-screen active">
+      <div class="card">
         <div class="en">Loading...</div>
         <div class="ja">データを読み込んでいます</div>
       </div>
     </main>
 
+    <!-- ビュー2: 早撃ちタイピング -->
+    <main id="view-typing" class="view-screen">
+      <div class="typing-card">
+        <div class="timer-bar-container"><div id="timer-bar"></div></div>
+        <div id="typing-ja" class="target-ja">日本語テキスト</div>
+        <input type="text" id="typing-input" class="type-input" placeholder="英文を入力..." autocomplete="off" autocapitalize="none" spellcheck="false">
+        <div id="typing-feedback" class="typing-feedback">即打ちでスピーキング脳を育成</div>
+      </div>
+    </main>
+
     <div class="controls">
       <button id="next-btn">
-        <span>次へ表示</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        <span id="btn-text">次のシーンへ</span>
       </button>
     </div>
   </div>
 
-  <script>
-    var Module = {
-      onRuntimeInitialized: function() {
-        console.log("WASM runtime initialized.");
-        if (typeof startApp === 'function') {
-          startApp();
-        }
-      }
-    };
-  </script>
-
-  <script src="engine.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <!-- WASMの自動生成ファイル(engine.js)が存在する場合は読み込む -->
+  <script src="engine.js"></script>
+  <script src="app.js?v=1"></script>
 </body>
 </html>
