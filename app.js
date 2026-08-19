@@ -72,13 +72,12 @@ function playSuccessSound() {
   osc.stop(now + 0.3);
 }
 
-// --- 英語音声読み上げ（Web Speech API 強化版） ---
+// --- 英語音声読み上げ（Web Speech API） ---
 let englishVoice = null;
 
 function loadVoices() {
   if (!('speechSynthesis' in window)) return;
   const voices = window.speechSynthesis.getVoices();
-  // 英語のボイス（en-US優先、なければenを含むもの）を検索
   englishVoice = voices.find(v => v.lang === 'en-US') || 
                  voices.find(v => v.lang.startsWith('en'));
 }
@@ -91,7 +90,6 @@ if ('speechSynthesis' in window) {
 function speakEnglish(text) {
   if (!('speechSynthesis' in window) || !text) return;
 
-  // 再生中の音声を一度停止
   window.speechSynthesis.cancel();
 
   const uttr = new SpeechSynthesisUtterance(text);
@@ -102,7 +100,6 @@ function speakEnglish(text) {
     uttr.voice = englishVoice;
   }
 
-  // 非同期呼び出しのブロック回避のため極小の遅延を入れる
   setTimeout(() => {
     window.speechSynthesis.speak(uttr);
   }, 30);
@@ -110,8 +107,9 @@ function speakEnglish(text) {
 
 // --- 初期ロード処理 ---
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('next-btn').addEventListener('click', onNextBtnClick);
-  
+  document.getElementById('study-next-btn').addEventListener('click', onNextBtnClick);
+  document.getElementById('typing-next-btn').addEventListener('click', onNextBtnClick);
+
   const typeInput = document.getElementById('typing-input');
   typeInput.addEventListener('input', onTypingInput);
   typeInput.addEventListener('keydown', (e) => {
@@ -120,12 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ブラウザの音声再生セキュリティを解除するための初回ユーザー操作イベント
   const unlockAudio = () => {
     initAudio();
     if ('speechSynthesis' in window) {
       loadVoices();
-      // 空の音声を発声させてアンロック
       const u = new SpeechSynthesisUtterance('');
       window.speechSynthesis.speak(u);
     }
@@ -144,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// --- シーン内の全カード（chunks/idioms/words）を1つの配列にまとめる ---
+// --- シーン内の全カードを配列化 ---
 function getAllCardsInScene(scene) {
   if (!scene) return [];
   let list = [];
@@ -160,7 +156,7 @@ function switchView(viewName) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   
   currentView = viewName;
-  currentCardIndex = 0; // 切り替え時に問題インデックスをリセット
+  currentCardIndex = 0;
 
   document.getElementById('tab-study').classList.toggle('active', viewName === 'study');
   document.getElementById('tab-typing').classList.toggle('active', viewName === 'typing');
@@ -168,12 +164,15 @@ function switchView(viewName) {
   document.getElementById('view-study').classList.toggle('active', viewName === 'study');
   document.getElementById('view-typing').classList.toggle('active', viewName === 'typing');
 
-  const btnText = document.getElementById('btn-text');
+  // ビューごとの下部コントロール表示切り替え
+  const studyControls = document.getElementById('study-controls');
+  if (studyControls) {
+    studyControls.style.display = viewName === 'study' ? 'block' : 'none';
+  }
+
   if (viewName === 'study') {
-    btnText.textContent = '次のシーンへ';
     stopTimer();
   } else {
-    btnText.textContent = 'スキップして次へ';
     resetTypingState();
   }
 }
@@ -195,9 +194,8 @@ function renderCurrentScene() {
     cards.forEach(card => {
       const cardEl = document.createElement('div');
       cardEl.className = 'card';
-      cardEl.style.cursor = 'pointer'; // クリック可能であることを明示
+      cardEl.style.cursor = 'pointer';
       
-      // スピーカーアイコン付きのレイアウトを出力
       cardEl.innerHTML = `
         <div class="card-content">
           <div class="en">${card.en}</div>
@@ -206,7 +204,6 @@ function renderCurrentScene() {
         <button class="speaker-btn" aria-label="音声再生">🔊</button>
       `;
 
-      // カード全体またはスピーカーアイコンのタップ/クリックで音声再生
       cardEl.addEventListener('click', () => {
         const btn = cardEl.querySelector('.speaker-btn');
         if (btn) {
@@ -233,7 +230,6 @@ function resetTypingState() {
 
   const cards = getAllCardsInScene(scene);
 
-  // 全問終わっていたら次のシーンへ進む
   if (currentCardIndex >= cards.length) {
     advanceNextScene(1.0, true);
     return;
@@ -254,9 +250,7 @@ function resetTypingState() {
   document.getElementById('typing-feedback').textContent = '即打ちでスピーキング脳を育成';
   document.getElementById('typing-feedback').style.color = 'var(--text-muted)';
 
-  // 🎯 出題のタイミングで答えに該当する英文を音声再生
   speakEnglish(currentCard.en);
-
   startTimer();
 }
 
@@ -304,7 +298,6 @@ function checkTypingAnswer(isForce) {
   const userText = normalizeText(inputEl.value);
   const targetText = normalizeText(currentCard.en);
 
-  // 正解判定
   if (userText === targetText && targetText.length > 0) {
     stopTimer();
     const responseTime = (performance.now() - startTime) / 1000;
@@ -315,13 +308,11 @@ function checkTypingAnswer(isForce) {
     document.getElementById('typing-feedback').textContent = `🎯 PERFECT! (${responseTime.toFixed(2)}秒)`;
     document.getElementById('typing-feedback').style.color = 'var(--accent-green)';
 
-    // ピンポン音の再生
     playSuccessSound();
 
-    // 0.8秒後に次の問題へ
     setTimeout(() => {
       currentCardIndex++;
-      resetTypingState(); // 次の問題表示時にspeakEnglishが実行されます
+      resetTypingState();
     }, 800);
 
   } else if (isForce && userText.length > 0) {
@@ -344,7 +335,7 @@ function handleWrongAnswer(message) {
   }
 }
 
-// --- 「次へ」ボタンクリック時の挙動 ---
+// --- 「次へ / スキップ」ボタン処理 ---
 function onNextBtnClick() {
   initAudio();
   if (currentView === 'study') {
@@ -359,7 +350,7 @@ function onNextBtnClick() {
 function advanceNextScene(responseTimeSec, isCorrect) {
   if (scenesData.length === 0) return;
 
-  currentCardIndex = 0; // カード位置リセット
+  currentCardIndex = 0;
 
   if (wasmSelectNextScene) {
     currentSceneIndex = wasmSelectNextScene(currentSceneIndex, responseTimeSec, isCorrect ? 1 : 0);
