@@ -1,188 +1,204 @@
 let scenesData = [];
 let currentIndex = 0;
+let currentView = 'study';
 
-let initEngine = null;
-let setMatrixCell = null;
-let selectNextScene = null;
-let isAppStarted = false;
+// タイピング関連の状態管理
+let typingQuestions = [];
+let currentQIndex = 0;
+let typingTimer = null;
+let startTime = 0;
+const TIME_LIMIT_SEC = 5;
 
-// ==========================================
-// Web Speech API (音声読み上げ機能)
-// ==========================================
+// WASMバインディング関数
+let wasmInitEngine = null;
+let wasmGetNextScene = null;
+
+// 音声再生（Web Speech API）
 function speakEnglish(text) {
-  if (!('speechSynthesis' in window)) {
-    console.warn("このブラウザは音声合成に対応していません。");
-    return;
-  }
-
-  // 直前のアニメーション・読み上げを一度キャンセル
+  if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
-
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'en-US'; // アメリカ英語
-  utterance.rate = 0.9;     // 少しゆっくりめ
-  utterance.pitch = 1.0;
-
+  utterance.lang = 'en-US';
+  utterance.rate = 1.0;
   window.speechSynthesis.speak(utterance);
 }
 
-async function startApp() {
-  if (isAppStarted) return;
+// 画面切り替え (SPA)
+function switchView(viewName) {
+  currentView = viewName;
+  document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+    btn.classList.toggle('active', (idx === 0 && viewName === 'study') || (idx === 1 && viewName === 'typing'));
+  });
 
-  const btn = document.getElementById('next-btn');
-  if (btn) {
-    btn.disabled = false;
-    btn.onclick = showNextScene;
+  document.getElementById('view-study').classList.toggle('active', viewName === 'study');
+  document.getElementById('view-typing').classList.toggle('active', viewName === 'typing');
+
+  const btnText = document.getElementById('btn-text');
+  if (viewName === 'study') {
+    if (btnText) btnText.textContent = '次のシーンへ';
+    clearInterval(typingTimer);
+  } else {
+    if (btnText) btnText.textContent = 'スキップ / 次へ';
+    startTypingSession();
+  }
+}
+
+async function initApp() {
+  // WASMの初期化チェック (C言語関数が存在すればロード)
+  if (typeof Module !== 'undefined' && Module.cwrap) {
+    Module.onRuntimeInitialized = () => {
+      wasmInitEngine = Module.cwrap('init_engine', null, ['number']);
+      wasmGetNextScene = Module.cwrap('get_next_recommended_scene', 'number', ['number', 'number', 'number']);
+      if (scenesData.length > 0) wasmInitEngine(scenesData.length);
+    };
   }
 
+  // ボタンイベント接続
+  document.getElementById('next-btn').onclick = () => {
+    if (currentView === 'study') {
+      showNextScene();
+    } else {
+      nextTypingQuestion(false, TIME_LIMIT_SEC); // 手動スキップはミス扱い
+    }
+  };
+
+  // 1. JSONデータのロード
   try {
     const res = await fetch('words.json?v=' + Date.now());
     if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
     scenesData = await res.json();
-
-    if (!Array.isArray(scenesData) || scenesData.length === 0) {
-      throw new Error("words.json が空です");
-    }
+    if (wasmInitEngine) wasmInitEngine(scenesData.length);
   } catch (err) {
     console.error("Failed to load words.json:", err);
-    renderError(`words.json 読み込み失敗: ${err.message}`);
     return;
   }
 
-  isAppStarted = true;
-
-  // WASM関数のバインドとマトリクス初期化
-  try {
-    if (typeof Module !== 'undefined' && typeof Module.cwrap === 'function') {
-      initEngine = Module.cwrap('init_engine', null, ['number']);
-      setMatrixCell = Module.cwrap('set_matrix_cell', null, ['number', 'number', 'number']);
-      selectNextScene = Module.cwrap('select_next_scene', 'number', ['number']);
-
-      if (scenesData.length > 0 && initEngine && setMatrixCell) {
-        buildAndUploadMatrix();
-      }
-    }
-  } catch (wasmErr) {
-    console.warn("WASM bind warning (fallback active):", wasmErr);
-  }
-
   showNextScene();
+  setupTypingInput();
 }
 
-function buildAndUploadMatrix() {
-  const n = scenesData.length;
-  if (n === 0 || !initEngine || !setMatrixCell) return;
-
-  initEngine(n);
-
-  for (let i = 0; i < n; i++) {
-    const wordsI = (scenesData[i].words || []).map(w => (w.en || '').toLowerCase());
-    for (let j = 0; j < n; j++) {
-      if (i === j) continue;
-      const wordsJ = (scenesData[j].words || []).map(w => (w.en || '').toLowerCase());
-
-      let matches = 0;
-      wordsI.forEach(wi => {
-        if (!wi) return;
-        wordsJ.forEach(wj => {
-          if (wj && (wi === wj || wi.includes(wj) || wj.includes(wi))) matches++;
-        });
-      });
-
-      setMatrixCell(i, j, matches);
-    }
-  }
-}
-
+// ------------------------------------------
+// 閲覧モード処理
+// ------------------------------------------
 function showNextScene() {
   if (!scenesData || scenesData.length === 0) return;
-
-  if (typeof selectNextScene === 'function') {
-    try {
-      currentIndex = selectNextScene(currentIndex);
-    } catch (e) {
-      console.warn("WASM call failed, fallback:", e);
-      currentIndex = (currentIndex + 1) % scenesData.length;
-    }
-  } else {
-    currentIndex = (currentIndex + 1) % scenesData.length;
-  }
-
   const scene = scenesData[currentIndex];
 
-  const sceneEl = document.getElementById('scene-id');
-  if (sceneEl) sceneEl.textContent = scene.sceneId || `SCENE ${currentIndex + 1}`;
+  document.getElementById('scene-id').textContent = scene.sceneId || `SCENE ${currentIndex + 1}`;
+  const container = document.getElementById('view-study');
+  container.innerHTML = '';
 
-  const container = document.getElementById('content-container');
-  if (container) {
-    container.innerHTML = '';
-    renderSection(container, 'Chunk', scene.chunks, 'chunk');
-    renderSection(container, 'Idiom', scene.idioms, 'idiom');
-    renderSection(container, 'Word', scene.words, 'word');
-  }
-}
-
-// ==========================================
-// カード描画関数（タップ読み上げ対応）
-// ==========================================
-// app.js 内の renderSection 関数を以下に差し替えてください
-function renderSection(container, typeLabel, items, cssClass) {
-  if (!items || !Array.isArray(items) || items.length === 0) return;
-
+  const items = [...(scene.chunks || []), ...(scene.idioms || []), ...(scene.words || [])];
   items.forEach(item => {
-    const sec = document.createElement('div');
-    sec.className = `section ${cssClass}`;
-    sec.style.cursor = 'pointer';
-
-    // タップで音声再生
-    if (item.en) {
-      sec.onclick = () => speakEnglish(item.en);
-    }
-
-    const tag = document.createElement('span');
-    tag.className = 'tag';
-    tag.textContent = typeLabel;
-
-    const en = document.createElement('div');
-    en.className = 'en';
-    
-    // 英文テキスト + スピーカー用SVGアイコン
-    const textSpan = document.createElement('span');
-    textSpan.textContent = item.en || '-';
-    
-    const iconSpan = document.createElement('span');
-    iconSpan.className = 'speaker-icon';
-    iconSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
-
-    en.appendChild(textSpan);
-    en.appendChild(iconSpan);
-
-    const ja = document.createElement('div');
-    ja.className = 'ja';
-    ja.textContent = item.ja || '-';
-
-    sec.appendChild(tag);
-    sec.appendChild(en);
-    sec.appendChild(ja);
-
-    container.appendChild(sec);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.onclick = () => speakEnglish(item.en);
+    card.innerHTML = `<div class="en">${item.en} 🔊</div><div class="ja">${item.ja}</div>`;
+    container.appendChild(card);
   });
 }
 
-function renderError(msg) {
-  const container = document.getElementById('content-container');
-  if (container) {
-    container.innerHTML = `<div class="section"><div class="en" style="color:red;">Error</div><div class="ja">${msg}</div></div>`;
+// ------------------------------------------
+// 早撃ちタイピング処理
+// ------------------------------------------
+function startTypingSession() {
+  const scene = scenesData[currentIndex];
+  typingQuestions = [...(scene.chunks || []), ...(scene.idioms || []), ...(scene.words || [])];
+  
+  if (typingQuestions.length === 0) {
+    showNextScene();
+    return;
   }
+
+  currentQIndex = 0;
+  loadTypingQuestion();
 }
 
-// WASMロード待ち
-if (typeof Module !== 'undefined') {
-  Module.onRuntimeInitialized = () => {
-    startApp();
-  };
-} else {
-  window.addEventListener('DOMContentLoaded', () => {
-    startApp();
+function loadTypingQuestion() {
+  clearInterval(typingTimer);
+  const q = typingQuestions[currentQIndex];
+  if (!q) {
+    // シーン内の全問題が終了 ➔ WASM側にお勧めの「次のシーン」を聞く
+    if (wasmGetNextScene) {
+      currentIndex = wasmGetNextScene(currentIndex, 1.5, 1);
+    } else {
+      currentIndex = (currentIndex + 1) % scenesData.length;
+    }
+    showNextScene();
+    startTypingSession();
+    return;
+  }
+
+  const jaEl = document.getElementById('typing-ja');
+  const inputEl = document.getElementById('typing-input');
+  const feedbackEl = document.getElementById('typing-feedback');
+  
+  jaEl.textContent = q.ja;
+  inputEl.value = '';
+  inputEl.className = 'type-input';
+  inputEl.focus();
+  feedbackEl.textContent = '打ち終えた瞬間に正解音声を自動再生';
+
+  startTimer();
+}
+
+function startTimer() {
+  const bar = document.getElementById('timer-bar');
+  let timeLeft = TIME_LIMIT_SEC * 100;
+  startTime = Date.now();
+  bar.style.width = '100%';
+
+  typingTimer = setInterval(() => {
+    timeLeft -= 5;
+    const percentage = Math.max(0, (timeLeft / (TIME_LIMIT_SEC * 100)) * 100);
+    bar.style.width = percentage + '%';
+
+    if (timeLeft <= 0) {
+      clearInterval(typingTimer);
+      nextTypingQuestion(false, TIME_LIMIT_SEC);
+    }
+  }, 50);
+}
+
+function setupTypingInput() {
+  const inputEl = document.getElementById('typing-input');
+  
+  inputEl.addEventListener('input', () => {
+    const q = typingQuestions[currentQIndex];
+    if (!q) return;
+
+    const userVal = normalizeText(inputEl.value);
+    const targetVal = normalizeText(q.en);
+
+    if (userVal === targetVal) {
+      clearInterval(typingTimer);
+      const timeTakenSec = (Date.now() - startTime) / 1000;
+      
+      inputEl.className = 'type-input correct';
+      document.getElementById('typing-feedback').textContent = `CLEAR! (${timeTakenSec.toFixed(2)}秒)`;
+      
+      // コンマ数秒後に正解音声を流してシャドーイングを促す
+      speakEnglish(q.en);
+
+      setTimeout(() => {
+        nextTypingQuestion(true, timeTakenSec);
+      }, 1200);
+    }
   });
 }
+
+function normalizeText(text) {
+  return (text || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function nextTypingQuestion(isCorrect, responseTimeSec) {
+  // WASMへ今回の結果（応答時間・正誤）をインプット
+  if (wasmGetNextScene) {
+    wasmGetNextScene(currentIndex, responseTimeSec, isCorrect ? 1 : 0);
+  }
+
+  currentQIndex++;
+  loadTypingQuestion();
+}
+
+window.addEventListener('DOMContentLoaded', initApp);
