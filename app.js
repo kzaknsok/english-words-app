@@ -1,15 +1,13 @@
 // --- グローバル状態管理 ---
 let scenesData = [];
 let currentSceneIndex = 0;
-let currentCardIndex = 0; // シーン内のカード位置
-let currentView = 'study'; // 'study' | 'typing'
+let currentCardIndex = 0;
+let currentView = 'study';
 
-// タイピング・応答時間計測用
 let startTime = 0;
 let timerInterval = null;
 const TIME_LIMIT_SEC = 5.0;
 
-// WASM関数バインド用
 let wasmInitEngine = null;
 let wasmSetMatrixCell = null;
 let wasmSelectNextScene = null;
@@ -72,7 +70,7 @@ function playSuccessSound() {
   osc.stop(now + 0.3);
 }
 
-// --- 英語音声読み上げ（Web Speech API） ---
+// --- 英語音声読み上げ ---
 let englishVoice = null;
 
 function loadVoices() {
@@ -118,6 +116,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // スマホのキーボード表示時に画面がズレるのを抑止
+  typeInput.addEventListener('focus', () => {
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+  });
+
   const unlockAudio = () => {
     initAudio();
     if ('speechSynthesis' in window) {
@@ -126,8 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
       window.speechSynthesis.speak(u);
     }
   };
+  document.body.addEventListener('touchstart', unlockAudio, { once: true });
   document.body.addEventListener('click', unlockAudio, { once: true });
-  document.body.addEventListener('keydown', unlockAudio, { once: true });
 
   fetch('words.json')
     .then(res => res.json())
@@ -140,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// --- シーン内の全カードを配列化 ---
 function getAllCardsInScene(scene) {
   if (!scene) return [];
   let list = [];
@@ -150,7 +154,6 @@ function getAllCardsInScene(scene) {
   return list;
 }
 
-// --- ビュー切り替え ---
 function switchView(viewName) {
   initAudio();
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -164,7 +167,6 @@ function switchView(viewName) {
   document.getElementById('view-study').classList.toggle('active', viewName === 'study');
   document.getElementById('view-typing').classList.toggle('active', viewName === 'typing');
 
-  // ビューごとの下部コントロール表示切り替え
   const studyControls = document.getElementById('study-controls');
   if (studyControls) {
     studyControls.style.display = viewName === 'study' ? 'block' : 'none';
@@ -177,7 +179,6 @@ function switchView(viewName) {
   }
 }
 
-// --- 画面描画ロジック ---
 function renderCurrentScene() {
   if (scenesData.length === 0) return;
 
@@ -187,14 +188,12 @@ function renderCurrentScene() {
 
   const cards = getAllCardsInScene(scene);
 
-  // 1. 閲覧モードの描画
   const studyContainer = document.getElementById('study-cards-container');
   if (studyContainer) {
     studyContainer.innerHTML = '';
     cards.forEach(card => {
       const cardEl = document.createElement('div');
       cardEl.className = 'card';
-      cardEl.style.cursor = 'pointer';
       
       cardEl.innerHTML = `
         <div class="card-content">
@@ -217,13 +216,11 @@ function renderCurrentScene() {
     });
   }
 
-  // 2. 早打ちモードの描画
   if (currentView === 'typing') {
     resetTypingState();
   }
 }
 
-// --- 早撃ちタイピング処理 ---
 function resetTypingState() {
   const scene = scenesData[currentSceneIndex];
   if (!scene) return;
@@ -245,6 +242,8 @@ function resetTypingState() {
   input.value = '';
   input.className = 'type-input';
   input.disabled = false;
+  
+  // スマホでの入力利便性を考慮し、スクロール位置を調整
   input.focus();
 
   document.getElementById('typing-feedback').textContent = '即打ちでスピーキング脳を育成';
@@ -335,7 +334,6 @@ function handleWrongAnswer(message) {
   }
 }
 
-// --- 「次へ / スキップ」ボタン処理 ---
 function onNextBtnClick() {
   initAudio();
   if (currentView === 'study') {
