@@ -72,21 +72,40 @@ function playSuccessSound() {
   osc.stop(now + 0.3);
 }
 
-// 英語の音声読み上げ（キャンセルの徹底とエラーハンドリングを追加）
+// --- 英語音声読み上げ（Web Speech API 強化版） ---
+let englishVoice = null;
+
+function loadVoices() {
+  if (!('speechSynthesis' in window)) return;
+  const voices = window.speechSynthesis.getVoices();
+  // 英語のボイス（en-US優先、なければenを含むもの）を検索
+  englishVoice = voices.find(v => v.lang === 'en-US') || 
+                 voices.find(v => v.lang.startsWith('en'));
+}
+
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+}
+
 function speakEnglish(text) {
   if (!('speechSynthesis' in window) || !text) return;
-  
-  // 過去の再生キューをクリア
+
+  // 再生中の音声を一度停止
   window.speechSynthesis.cancel();
 
   const uttr = new SpeechSynthesisUtterance(text);
   uttr.lang = 'en-US';
   uttr.rate = 1.0;
-  
-  // ブロック対策として少しだけ遅延させて再生を確実に実行
+
+  if (englishVoice) {
+    uttr.voice = englishVoice;
+  }
+
+  // 非同期呼び出しのブロック回避のため極小の遅延を入れる
   setTimeout(() => {
     window.speechSynthesis.speak(uttr);
-  }, 50);
+  }, 30);
 }
 
 // --- 初期ロード処理 ---
@@ -101,15 +120,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 最初のクリック時にオーディオコンテキストを解放
-  document.body.addEventListener('click', () => {
+  // ブラウザの音声再生セキュリティを解除するための初回ユーザー操作イベント
+  const unlockAudio = () => {
     initAudio();
-    // ダミーの読み上げを入れてブラウザの自動再生ブロックを解除
-    if ('speechSynthesis' in window && speechSynthesis.speaking === false) {
+    if ('speechSynthesis' in window) {
+      loadVoices();
+      // 空の音声を発声させてアンロック
       const u = new SpeechSynthesisUtterance('');
-      speechSynthesis.speak(u);
+      window.speechSynthesis.speak(u);
     }
-  }, { once: true });
+  };
+  document.body.addEventListener('click', unlockAudio, { once: true });
+  document.body.addEventListener('keydown', unlockAudio, { once: true });
 
   fetch('words.json')
     .then(res => res.json())
@@ -135,6 +157,8 @@ function getAllCardsInScene(scene) {
 // --- ビュー切り替え ---
 function switchView(viewName) {
   initAudio();
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  
   currentView = viewName;
   currentCardIndex = 0; // 切り替え時に問題インデックスをリセット
 
@@ -171,10 +195,15 @@ function renderCurrentScene() {
     cards.forEach(card => {
       const cardEl = document.createElement('div');
       cardEl.className = 'card';
+      cardEl.style.cursor = 'pointer'; // クリック可能であることを明示
       cardEl.innerHTML = `
         <div class="en">${card.en}</div>
         <div class="ja">${card.ja}</div>
       `;
+      // カードクリック時にそのフレーズ/単語を再生
+      cardEl.addEventListener('click', () => {
+        speakEnglish(card.en);
+      });
       studyContainer.appendChild(cardEl);
     });
   }
@@ -212,6 +241,9 @@ function resetTypingState() {
 
   document.getElementById('typing-feedback').textContent = '即打ちでスピーキング脳を育成';
   document.getElementById('typing-feedback').style.color = 'var(--text-muted)';
+
+  // 🎯 出題のタイミングで答えに該当する英文を音声再生
+  speakEnglish(currentCard.en);
 
   startTimer();
 }
@@ -271,14 +303,13 @@ function checkTypingAnswer(isForce) {
     document.getElementById('typing-feedback').textContent = `🎯 PERFECT! (${responseTime.toFixed(2)}秒)`;
     document.getElementById('typing-feedback').style.color = 'var(--accent-green)';
 
-    // 効果音と読み上げを即時呼び出し
+    // ピンポン音の再生
     playSuccessSound();
-    speakEnglish(currentCard.en);
 
     // 0.8秒後に次の問題へ
     setTimeout(() => {
       currentCardIndex++;
-      resetTypingState();
+      resetTypingState(); // ※次の問題が表示される時に再び resetTypingState 内で speakEnglish が実行されます
     }, 800);
 
   } else if (isForce && userText.length > 0) {
@@ -301,16 +332,14 @@ function handleWrongAnswer(message) {
   }
 }
 
-// --- 「次へ」ボタンクリック時の挙動修正 ---
+// --- 「次へ」ボタンクリック時の挙動 ---
 function onNextBtnClick() {
   initAudio();
   if (currentView === 'study') {
-    // 閲覧モード：単純に次のシーンへ進み画面を更新する
     advanceNextScene(1.0, true);
   } else {
-    // 早打ちモード：スキップ処理
     stopTimer();
-    currentCardIndex = 0; // カード位置をリセットして次のシーンへ
+    currentCardIndex = 0;
     advanceNextScene(TIME_LIMIT_SEC, false);
   }
 }
@@ -323,10 +352,8 @@ function advanceNextScene(responseTimeSec, isCorrect) {
   if (wasmSelectNextScene) {
     currentSceneIndex = wasmSelectNextScene(currentSceneIndex, responseTimeSec, isCorrect ? 1 : 0);
   } else {
-    // WASMがない場合は次のシーンへループ遷移
     currentSceneIndex = (currentSceneIndex + 1) % scenesData.length;
   }
 
-  // 画面を再描画
   renderCurrentScene();
 }
