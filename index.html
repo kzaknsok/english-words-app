@@ -74,7 +74,7 @@
       border-radius: 20px; padding: 16px 20px; border: 1px solid var(--glass-border);
       box-shadow: var(--glass-shadow); display: flex; flex-direction: column; gap: 6px;
     }
-    .card .en { font-size: 1.15rem; font-weight: 600; }
+    .card .en { font-size: 1.15rem; font-weight: 600; color: #60a5fa; }
     .card .ja { font-size: 0.9rem; color: var(--text-muted); }
 
     /* タイピングビュー用カード */
@@ -120,17 +120,19 @@
   <div class="app-container">
     <header>
       <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchView('study')">📖 閲覧</button>
-        <button class="tab-btn" onclick="switchView('typing')">⚡ 早撃ち</button>
+        <button id="tab-study" class="tab-btn active" onclick="switchView('study')">📖 閲覧</button>
+        <button id="tab-typing" class="tab-btn" onclick="switchView('typing')">⚡ 早撃ち</button>
       </div>
       <span id="scene-id">SCENE --</span>
     </header>
 
-    <!-- ビュー1: 閲覧（従来のカード学習） -->
+    <!-- ビュー1: 閲覧（カード学習） -->
     <main id="view-study" class="view-screen active">
-      <div class="card">
-        <div class="en">Loading...</div>
-        <div class="ja">データを読み込んでいます</div>
+      <div id="study-cards-container">
+        <div class="card">
+          <div class="en">Loading...</div>
+          <div class="ja">データを読み込んでいます</div>
+        </div>
       </div>
     </main>
 
@@ -153,6 +155,6 @@
 
   <!-- WASMの自動生成ファイル(engine.js)が存在する場合は読み込む -->
   <script src="engine.js"></script>
-  <script src="app.js?v=1"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>
