@@ -8,27 +8,36 @@
 
   <style>
     /* ==========================================
-       Base System & Modern Reset
+       Base System & Dynamic Glassmorphism Reset
        ========================================== */
     :root {
-      --bg-color: #f8fafc;
-      --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      --accent-color: #2563eb;
+      /* 高級感と透明感のあるグラデーション背景 */
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
       
-      /* タグカラー */
-      --tag-chunk-bg: #eff6ff;
-      --tag-chunk-text: #1d4ed8;
-      --tag-idiom-bg: #f0fdf4;
-      --tag-idiom-text: #15803d;
-      --tag-word-bg: #fff7ed;
-      --tag-word-text: #c2410c;
+      /* ガラスエフェクト用カラー (透過ホワイト) */
+      --glass-bg: rgba(255, 255, 255, 0.07);
+      --glass-bg-hover: rgba(255, 255, 255, 0.12);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      
+      /* テキストカラー */
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      /* タグ（ネオン感のある上質な半透明アクセント） */
+      --tag-chunk-bg: rgba(59, 130, 246, 0.2);
+      --tag-chunk-text: #60a5fa;
+      --tag-chunk-border: rgba(96, 165, 250, 0.3);
 
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+      --tag-idiom-bg: rgba(16, 185, 129, 0.2);
+      --tag-idiom-text: #34d399;
+      --tag-idiom-border: rgba(52, 211, 153, 0.3);
+
+      --tag-word-bg: rgba(249, 115, 22, 0.2);
+      --tag-word-text: #fb923c;
+      --tag-word-border: rgba(251, 146, 60, 0.3);
+
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
     }
 
     * {
@@ -41,15 +50,15 @@
     html, body {
       width: 100%;
       height: 100%;
-      overflow: hidden; /* 全体スクロールを防止 */
-      background-color: var(--bg-color);
+      overflow: hidden;
+      background: var(--bg-gradient);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       color: var(--text-main);
       line-height: 1.5;
     }
 
     /* ==========================================
-       App Layout & Container (間隔の均等化)
+       App Layout & Centered Flexbox Container
        ========================================== */
     .app-container {
       width: 100%;
@@ -57,60 +66,62 @@
       height: 100dvh;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: space-between; /* 上下左右に適切な余白を配分 */
       padding: 16px;
       padding-top: max(16px, env(safe-area-inset-top));
       padding-bottom: max(16px, env(safe-area-inset-bottom));
       padding-left: max(16px, env(safe-area-inset-left));
       padding-right: max(16px, env(safe-area-inset-right));
+      max-width: 480px;
+      margin: 0 auto;
     }
 
-    /* 固定ヘッダー */
+    /* 固定ヘッダー（透明ガラススタイル） */
     header {
       flex-shrink: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 18px;
-      background: var(--card-bg);
-      border-radius: 16px;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--border-color);
-      margin-bottom: 16px;
+      padding: 12px 18px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
     }
 
     .brand-title {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       color: var(--text-muted);
       text-transform: uppercase;
     }
 
     #scene-id {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
-      background-color: var(--bg-color);
-      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 12px;
       border-radius: 20px;
-      color: var(--text-main);
-      border: 1px solid var(--border-color);
+      color: #ffffff;
+      border: 1px solid var(--glass-border);
     }
 
-    /* 中央コンテンツエリア */
+    /* 中央コンテンツエリア（完全垂直中央寄せ・画面フィット） */
     #content-container {
-      flex-grow: 1;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center; /* カードが少ない時は上下中央寄りに配置 */
-      gap: 14px;
+      justify-content: center; /* カード群を縦方向中央へ綺麗に納める */
+      gap: 12px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      margin-top: auto;
-      margin-bottom: auto;
+      padding: 12px 0;
     }
 
-    /* スクロールバーの非表示 */
+    /* スクロールバー非表示 */
     #content-container::-webkit-scrollbar {
       display: none;
     }
@@ -120,109 +131,140 @@
     }
 
     /* ==========================================
-       Card Component
+       Glassmorphism Card Component
        ========================================== */
     .section {
       flex-shrink: 0;
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 16px 18px;
-      box-shadow: var(--shadow-md);
-      border: 1px solid var(--border-color);
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 16px 20px;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
       display: flex;
       flex-direction: column;
       gap: 6px;
-      animation: fadeInUp 0.25s ease-out forwards;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* タップ時のクリアなフィードバック */
+    .section:active {
+      transform: scale(0.98);
+      background: var(--glass-bg-hover);
     }
 
     @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: translateY(10px) scale(0.97);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
       }
     }
 
+    /* タグスタイリング */
     .tag {
       align-self: flex-start;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 3px 8px;
-      border-radius: 6px;
+      letter-spacing: 0.06em;
+      padding: 3px 10px;
+      border-radius: 8px;
       text-transform: uppercase;
-      background-color: var(--bg-color);
+      background: rgba(255, 255, 255, 0.1);
       color: var(--text-muted);
+      border: 1px solid transparent;
     }
 
     .section.chunk .tag {
-      background-color: var(--tag-chunk-bg);
+      background: var(--tag-chunk-bg);
       color: var(--tag-chunk-text);
+      border-color: var(--tag-chunk-border);
     }
 
     .section.idiom .tag {
-      background-color: var(--tag-idiom-bg);
+      background: var(--tag-idiom-bg);
       color: var(--tag-idiom-text);
+      border-color: var(--tag-idiom-border);
     }
 
     .section.word .tag {
-      background-color: var(--tag-word-bg);
+      background: var(--tag-word-bg);
       color: var(--tag-word-text);
+      border-color: var(--tag-word-border);
     }
 
+    /* 英和テキスト */
     .en {
       font-size: 1.15rem;
       font-weight: 600;
-      color: var(--text-main);
+      color: #ffffff;
       letter-spacing: -0.01em;
       word-break: break-word;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .ja {
-      font-size: 0.925rem;
+      font-size: 0.9rem;
       color: var(--text-muted);
       font-weight: 400;
       word-break: break-word;
     }
 
+    /* スピーカーアイコンのスタイル */
+    .speaker-icon {
+      font-size: 0.9em;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .section:active .speaker-icon {
+      opacity: 1;
+    }
+
     /* ==========================================
-       Bottom Controls
+       Bottom Controls (リッチグラデーションボタン)
        ========================================== */
     .controls {
       flex-shrink: 0;
-      margin-top: 16px;
     }
 
     #next-btn {
       width: 100%;
       height: 56px;
       border: none;
-      border-radius: 16px;
-      background: var(--accent-color);
+      border-radius: 20px;
+      background: var(--accent-gradient);
       color: #ffffff;
       font-size: 1rem;
       font-weight: 600;
-      letter-spacing: 0.02em;
-      box-shadow: var(--shadow-lg);
+      letter-spacing: 0.03em;
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
       cursor: pointer;
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 8px;
-      transition: background-color 0.2s ease, transform 0.1s ease;
+      gap: 10px;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     #next-btn:active {
-      transform: scale(0.98);
-      background-color: #1d4ed8;
+      transform: scale(0.97);
+      box-shadow: 0 5px 15px -5px rgba(99, 102, 241, 0.3);
     }
 
     #next-btn:disabled {
-      background-color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
       box-shadow: none;
+      border-color: transparent;
       cursor: not-allowed;
     }
   </style>

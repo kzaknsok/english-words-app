@@ -6,6 +6,26 @@ let setMatrixCell = null;
 let selectNextScene = null;
 let isAppStarted = false;
 
+// ==========================================
+// Web Speech API (音声読み上げ機能)
+// ==========================================
+function speakEnglish(text) {
+  if (!('speechSynthesis' in window)) {
+    console.warn("このブラウザは音声合成に対応していません。");
+    return;
+  }
+
+  // 直前のアニメーション・読み上げを一度キャンセル
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US'; // アメリカ英語
+  utterance.rate = 0.9;     // 少しゆっくりめ
+  utterance.pitch = 1.0;
+
+  window.speechSynthesis.speak(utterance);
+}
+
 async function startApp() {
   if (isAppStarted) return;
 
@@ -53,7 +73,6 @@ function buildAndUploadMatrix() {
   const n = scenesData.length;
   if (n === 0 || !initEngine || !setMatrixCell) return;
 
-  // C側の静的領域を初期化（mallocは使いません）
   initEngine(n);
 
   for (let i = 0; i < n; i++) {
@@ -103,12 +122,22 @@ function showNextScene() {
   }
 }
 
+// ==========================================
+// カード描画関数（タップ読み上げ対応）
+// ==========================================
+// app.js 内の renderSection 関数を以下に差し替えてください
 function renderSection(container, typeLabel, items, cssClass) {
   if (!items || !Array.isArray(items) || items.length === 0) return;
 
   items.forEach(item => {
     const sec = document.createElement('div');
     sec.className = `section ${cssClass}`;
+    sec.style.cursor = 'pointer';
+
+    // タップで音声再生
+    if (item.en) {
+      sec.onclick = () => speakEnglish(item.en);
+    }
 
     const tag = document.createElement('span');
     tag.className = 'tag';
@@ -116,7 +145,17 @@ function renderSection(container, typeLabel, items, cssClass) {
 
     const en = document.createElement('div');
     en.className = 'en';
-    en.textContent = item.en || '-';
+    
+    // 英文テキスト + スピーカー用SVGアイコン
+    const textSpan = document.createElement('span');
+    textSpan.textContent = item.en || '-';
+    
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'speaker-icon';
+    iconSpan.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+
+    en.appendChild(textSpan);
+    en.appendChild(iconSpan);
 
     const ja = document.createElement('div');
     ja.className = 'ja';
