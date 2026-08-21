@@ -138,6 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(res => res.json())
     .then(data => {
       scenesData = data;
+      if (scenesData.length > 0) {
+        // ランダムなシーン位置（0 ～ scenesData.length - 1）から開始
+        currentSceneIndex = Math.floor(Math.random() * scenesData.length);
+      }
       renderCurrentScene();
     })
     .catch(err => {
