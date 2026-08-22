@@ -357,7 +357,16 @@ function advanceNextScene(responseTimeSec, isCorrect) {
   if (wasmSelectNextScene) {
     currentSceneIndex = wasmSelectNextScene(currentSceneIndex, responseTimeSec, isCorrect ? 1 : 0);
   } else {
-    currentSceneIndex = (currentSceneIndex + 1) % scenesData.length;
+    // データが2件以上ある場合、同じシーンが連続しないようにランダム選出
+    if (scenesData.length > 1) {
+      let nextIndex = currentSceneIndex;
+      while (nextIndex === currentSceneIndex) {
+        nextIndex = Math.floor(Math.random() * scenesData.length);
+      }
+      currentSceneIndex = nextIndex;
+    } else {
+      currentSceneIndex = 0;
+    }
   }
 
   renderCurrentScene();
